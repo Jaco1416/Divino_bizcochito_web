@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// Tabla de perfil de usuarios
+model Perfiles {
+  id        String   @id @db.Uuid  // UUID del usuario (igual que auth.users.id)
+  nombre    String?
+  rol       String   @default("cliente")
+  imagen    String   @default("https://kvouupzgdjriuvzynidv.supabase.co/storage/v1/object/sign/project_assets/Users/User_default.png")
+  creado_en DateTime @default(now())
+}
+
+/// Tabla de categorías de productos
+model Categoria {
+  id          Int        @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  createdAt   DateTime   @default(now())
+  productos   Producto[]
+}
+
+/// Tabla de rellenos
+model Relleno {
+  id          Int             @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  createdAt   DateTime        @default(now())
+  productos   Producto[]
+  detalles    DetallePedido[]
+}
+
+/// Tabla de toppings
+model Topping {
+  id          Int             @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  createdAt   DateTime        @default(now())
+  productos   Producto[]
+  detalles    DetallePedido[]
+}
+
+/// Tabla de productos
+model Producto {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  precio      Float
+  toppingId   Int
+  rellenoId   Int
+  categoriaId Int
+  imagen      String   @default("https://kvouupzgdjriuvzynidv.supabase.co/storage/v1/object/sign/project_assets/Pastel_producto.jpg")
+  createdAt   DateTime @default(now())
+
+  topping   Topping         @relation(fields: [toppingId], references: [id])
+  relleno   Relleno         @relation(fields: [rellenoId], references: [id])
+  categoria Categoria       @relation(fields: [categoriaId], references: [id])
+  detalles  DetallePedido[]
+}
+
+/// Tabla de pedidos
+model Pedido {
+  id            Int             @id @default(autoincrement())
+  usuarioId     String          @db.Uuid // UUID del usuario de Supabase Auth
+  tipoEntrega   String
+  datosEnvio    Json?
+  estado        String          @default("Pendiente")
+  fechaCreacion DateTime        @default(now())
+  fechaEntrega  DateTime?
+  total         Float
+  createdAt     DateTime        @default(now())
+  detalles      DetallePedido[]
+
+  // Relación con el usuario de Supabase (sin foreign key directa, pero semántica)
+  // Puedes usar el campo usuarioId para hacer join manual con auth.users.id
+}
+
+/// Detalle de cada producto dentro de un pedido
+model DetallePedido {
+  id             Int    @id @default(autoincrement())
+  pedidoId       Int
+  productoId     Int
+  toppingId      Int?
+  rellenoId      Int?
+  cantidad       Int    @default(1)
+  precioUnitario Float
+  nombreProducto String
+  imagenProducto String
+
+  pedido   Pedido   @relation(fields: [pedidoId], references: [id])
+  producto Producto @relation(fields: [productoId], references: [id])
+  topping  Topping? @relation(fields: [toppingId], references: [id])
+  relleno  Relleno? @relation(fields: [rellenoId], references: [id])
+}
+
+/// Registro de transacciones de Webpay
+model TransaccionWebpay {
+  id        Int      @id @default(autoincrement())
+  buyOrder  String
+  sessionId String
+  monto     Float
+  estado    String   @default("pendiente")
+  payload   Json
+  createdAt DateTime @default(now())
+}
