@@ -1,26 +1,27 @@
 "use client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import Carousel from "./components/Carousel/Carousel";
 
 export default function Home() {
   const router = useRouter();
+   const { user, perfil, loading, handleLogout } = useAuth();
 
   const handleLogin = () => {
     router.push("/views/login"); // o "/login" si está fuera de /views
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-rose-50 to-white">
-      <h1 className="text-3xl font-bold text-rose-700 mb-8">
-        Bienvenido a Divino Bizcochito 🍰
+    <main className="p-0 m-0">
+      <Carousel />
+      <h1 className="text-4xl font-bold text-[#C72C2F] text-center mt-8">
+        Productos destacados
       </h1>
-
-      <button
-        onClick={handleLogin}
-        className="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-transform transform hover:scale-105"
-      >
-        Iniciar sesión
-      </button>
+      <h1>
+       <p>Bienvenido: {perfil?.nombre}</p>
+       <p>Perfil: {perfil?.rol}</p>
+      </h1>
     </main>
   );
 }
