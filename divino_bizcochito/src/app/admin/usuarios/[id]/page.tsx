@@ -29,7 +29,7 @@ export default function GetUsuario() {
                 const res = await fetch(`/api/perfiles?id=${id}`);
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || "Error al obtener usuario");
-                setUsuario(data[0]); // asumiendo que el endpoint devuelve un array
+                setUsuario(data); // ahora el endpoint devuelve un solo objeto
             } catch (error) {
                 console.error("❌ Error al obtener usuario:", error);
                 showAlert("❌ No se pudo cargar el usuario");

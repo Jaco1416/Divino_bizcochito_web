@@ -9,7 +9,23 @@ const TABLE_NAME = "Perfiles";
 // ============================================================
 export async function GET(request: Request) {
   try {
-    const { data, error } = await supabaseAdmin.from(TABLE_NAME).select("*");
+    // obtener parámetro id si existe
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    let data, error;
+
+    if (id) {
+      // traer un solo usuario por id
+      ({ data, error } = await supabaseAdmin
+        .from(TABLE_NAME)
+        .select("*")
+        .eq("id", id)
+        .single()); // .single() para obtener un objeto en vez de array
+    } else {
+      // traer todos los usuarios
+      ({ data, error } = await supabaseAdmin.from(TABLE_NAME).select("*"));
+    }
 
     if (error) throw error;
     return NextResponse.json(data, { status: 200 });
