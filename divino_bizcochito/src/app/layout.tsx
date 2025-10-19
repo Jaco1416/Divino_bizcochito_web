@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
+import { AlertProvider } from "@/context/AlertContext";
+import Alert from "@/app/components/ui/Alert";
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/footer/Footer";
 import "./globals.css";
@@ -31,9 +33,12 @@ export default function RootLayout({
         className="flex flex-col min-h-screen bg-[#FFF7F6]"
       >
         <AuthProvider>
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
+          <AlertProvider>
+            <Alert /> {/* Renderiza las alertas globales */}
+            <Navbar />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </AlertProvider>
         </AuthProvider>
       </body>
     </html>

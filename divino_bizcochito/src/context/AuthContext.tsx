@@ -9,6 +9,7 @@ interface Perfil {
   nombre: string;
   rol: "admin" | "cliente";
   imagen: string;
+  telefono: string;
 }
 
 interface AuthContextType {
@@ -22,7 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   perfil: null,
   loading: true,
-  handleLogout: async () => { },
+  handleLogout: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -31,24 +32,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // 🔹 Función para obtener el perfil desde la BD
+  
+  const fetchPerfil = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("Perfiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      console.error("❌ Error al obtener perfil:", error);
+      return null;
+    }
+
+    console.log("✅ Perfil obtenido:", data);
+    return data;
+  };
+
+  // 🔹 Cargar sesión inicial
   useEffect(() => {
-    const fetchUser = async () => {
+    const initialize = async () => {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (session?.user) {
+        const perfilData = await fetchPerfil(session.user.id);
         setUser(session.user);
-
-        const { data: perfilData, error } = await supabase
-          .from("Perfiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
-
-        if (error) console.error("Error al obtener perfil:", error);
-        else console.log("Perfil obtenido:", perfilData);
-
-        setPerfil(perfilData || null);
+        setPerfil(perfilData);
       } else {
         setUser(null);
         setPerfil(null);
@@ -57,28 +70,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     };
 
-    fetchUser();
+    initialize();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    // 🔹 Suscribirse a cambios de sesión (login / logout / refresh)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser(session.user);
-        supabase
-          .from("Perfiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
-          .then((result) => {
-            console.log("Resultado crudo del perfil:", result);
-            const { data, error } = result;
-
-            if (error) {
-              console.error("Error al actualizar perfil:", error);
-            } else {
-              console.log("Perfil actualizado:", data);
-            }
-
-            setPerfil(data || null);
-          });
+        const perfilData = await fetchPerfil(session.user.id);
+        setPerfil(perfilData);
       } else {
         setUser(null);
         setPerfil(null);
@@ -86,15 +87,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => {
-      listener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
+  // 🔹 Cerrar sesión
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setPerfil(null);
-    router.push("/views/login"); // redirige al login (ajústalo si usas /vistas/login)
+    router.push("/views/login");
   };
 
   return (
