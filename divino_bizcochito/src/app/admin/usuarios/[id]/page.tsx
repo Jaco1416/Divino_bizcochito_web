@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAlert } from "@/app/hooks/useAlert";
-import ProtectedRoute from '@/app/components/protectedRoute/protectedRoute';
+import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 
 interface Usuario {
