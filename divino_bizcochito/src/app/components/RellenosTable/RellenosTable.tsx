@@ -1,51 +1,67 @@
 "use client";
-import Link from "next/link";
-import { useAlert } from "@/app/hooks/useAlert";
 import { useState } from "react";
-import ConfirmModal from "../ui/ConfirmModal";
+import { useAlert } from "@/app/hooks/useAlert";
+import Link from "next/link";
+import ConfirmModal from "@/app/components/ui/ConfirmModal";
 
-interface UsuariosTableProps {
-    usuarios: any[];
+interface Relleno {
+    id: string;
+    nombre: string;
+    descripcion?: string;
+    disponible: boolean;
 }
 
-export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
+interface RellenoTableProps {
+    rellenos: Relleno[];
+}
+
+export default function RellenoTable({ rellenos }: RellenoTableProps) {
 
     const { showAlert } = useAlert();
+
+    // Estado local para la lista de rellenos
+    const [rellenosList, setRellenosList] = useState<Relleno[]>(rellenos);
     const [modalOpen, setModalOpen] = useState(false);
-    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [selectedRellenoId, setSelectedRellenoId] = useState<string | null>(null);
 
-
-    if (usuarios.length === 0) {
-        return (
-            <p className="text-center text-gray-600 mt-6">
-                No hay usuarios registrados.
-            </p>
-        );
-    }
-
+    // 🧱 Abrir modal
     const handleDeleteClick = (id: string) => {
-        setSelectedUserId(id);
+        setSelectedRellenoId(id);
         setModalOpen(true);
     };
 
+    // 🧱 Confirmar eliminación
     const handleConfirmDelete = async () => {
-        if (!selectedUserId) return;
+        if (!selectedRellenoId) return;
 
         try {
-            const res = await fetch(`/api/perfiles?id=${selectedUserId}`, { method: "DELETE" });
+            const res = await fetch(`/api/relleno?id=${selectedRellenoId}`, {
+                method: "DELETE",
+            });
+
             const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Error al eliminar relleno");
 
-            if (!res.ok) throw new Error(data.error || "Error al eliminar usuario");
+            showAlert("✅ Relleno eliminado correctamente", "success");
 
-            showAlert("✅ Usuario eliminado correctamente");
+            // ✅ Actualizar lista local (sin volver a hacer fetch)
+            setRellenosList((prev) => prev.filter((r) => r.id !== selectedRellenoId));
         } catch (error) {
-            console.error("❌ Error al eliminar usuario:", error);
-            showAlert("❌ No se pudo eliminar el usuario");
+            console.error("❌ Error al eliminar relleno:", error);
+            showAlert("❌ No se pudo eliminar el relleno", "error");
         } finally {
             setModalOpen(false);
-            setSelectedUserId(null);
+            setSelectedRellenoId(null);
         }
     };
+
+    if (rellenosList.length === 0) {
+        return (
+            <p className="text-center text-gray-600 mt-6">
+                No hay rellenos registrados.
+            </p>
+        );
+    }
 
     return (
         <div className="w-full flex justify-center mt-6">
@@ -54,44 +70,32 @@ export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
                     <table className="w-full border-collapse text-center text-sm text-white">
                         <thead className="bg-[#530708] uppercase text-xs font-semibold">
                             <tr>
-                                <th className="px-4 py-3 border border-[#8B3A3A]">Imagen</th>
                                 <th className="px-4 py-3 border border-[#8B3A3A]">Nombre</th>
-                                <th className="px-4 py-3 border border-[#8B3A3A]">Rol</th>
-                                <th className="px-4 py-3 border border-[#8B3A3A]">Teléfono</th>
+                                <th className="px-4 py-3 border border-[#8B3A3A]">Descripción</th>
                                 <th className="px-4 py-3 border border-[#8B3A3A]">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {usuarios.map((user) => (
+                            {rellenosList.map((relleno) => (
                                 <tr
-                                    key={user.id}
+                                    key={relleno.id}
                                     className="bg-[#A26B6B] text-white border border-[#ffff] transition-colors"
                                 >
                                     <td className="px-4 py-2 border border-[#8B3A3A] font-medium">
-                                        <img
-                                            src={user.imagen}
-                                            alt={user.nombre}
-                                            className="w-10 h-10 rounded-full border bg-amber-50 border-white mx-auto shadow-sm"
-                                        />
-                                    </td>
-                                    <td className="px-4 py-2 border border-[#8B3A3A] capitalize">
-                                        {user.nombre}
+                                        {relleno.nombre}
                                     </td>
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
-                                        {user.rol}
-                                    </td>
-                                    <td className="px-4 py-2 border border-[#8B3A3A]">
-                                        {user.telefono || "-"}
+                                        {relleno.descripcion || "-"}
                                     </td>
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
                                         <div className="flex justify-center gap-3">
-                                            <Link href={`/admin/usuarios/${user.id}`}>
+                                            <Link href={`/admin/rellenos/${relleno.id}`}>
                                                 <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition">
                                                     Editar
                                                 </button>
                                             </Link>
                                             <button
-                                                onClick={() => handleDeleteClick(user.id)} // 👈 Aquí se llama
+                                                onClick={() => handleDeleteClick(relleno.id)}
                                                 className="bg-[#530708] hover:bg-[#3D0506] text-white font-semibold px-3 py-1 rounded transition"
                                             >
                                                 Eliminar
@@ -104,10 +108,12 @@ export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
                     </table>
                 </div>
             </div>
+
+            {/* 🧩 Modal de confirmación */}
             <ConfirmModal
                 isOpen={modalOpen}
-                title="Eliminar usuario"
-                message="¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer."
+                title="Eliminar relleno"
+                message="¿Estás seguro de eliminar este relleno? Esta acción no se puede deshacer."
                 confirmText="Eliminar"
                 cancelText="Cancelar"
                 onConfirm={handleConfirmDelete}
