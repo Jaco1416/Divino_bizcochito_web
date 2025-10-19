@@ -1,5 +1,5 @@
 "use client";
-import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
+import ProtectedRoute from '@/app/components/protectedRoute/protectedRoute';
 
 export default function AdminPage() {
   return (

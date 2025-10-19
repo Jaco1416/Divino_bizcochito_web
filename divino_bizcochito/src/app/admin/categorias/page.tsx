@@ -1,5 +1,5 @@
 import React from 'react'
-import ProtectedRoute from '@/app/components/protectedRoute/ProtectedRoute';
+import ProtectedRoute from '@/app/components/protectedRoute/protectedRoute';
 import BackButton from '@/app/components/BackButton/BackButton';
 
 function CategoriasPage() {
