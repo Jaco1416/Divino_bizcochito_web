@@ -13,7 +13,7 @@ const options = [
   "Pedidos",
   "Toppings",
   "Rellenos",
-  "Categorías",
+  "Categorias",
 ];
 
 export default function AdminOptions({ onSelect }: AdminOptionsProps) {

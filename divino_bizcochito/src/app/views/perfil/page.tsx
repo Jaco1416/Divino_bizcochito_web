@@ -3,11 +3,13 @@
 import React from 'react'
 import PerfilCard from '@/app/components/PerfilCard/PerfilCard';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from "next/navigation";
 import ProtectedRoute from '@/app/components/protectedRoute/ProtectedRoute';
 import AdminOptions from '@/app/components/AdminOptions/AdminOptions';
 
 function PerfilPage() {
     const { user, perfil, loading } = useAuth();
+    const router = useRouter();
 
     if (loading) {
         return (
@@ -17,6 +19,11 @@ function PerfilPage() {
         );
     }
 
+    const handleSelect = (option: string) => {
+        // 🔹 Redirige a la ruta /admin/(opciones)
+        router.push(`/admin/${option}`);
+    };
+
 
     return (
         <div>
@@ -24,16 +31,16 @@ function PerfilPage() {
                 <div className="min-h-screen flex flex-col items-center justify-start py-10 px-4 bg-[#F9F4EF]">
                     {/* Si el rol es administrador, mostrar panel */}
                     <PerfilCard
-                            nombre={perfil?.nombre || "Juan Pérez"}
-                            rol={perfil?.rol || "Cliente"}
-                            email={user?.email || "juan.perez@example.com"}
-                            telefono={perfil?.telefono || "+56 9 1234 5678"}
-                            imagen={perfil?.imagen || "/path/to/image.jpg"}
-                            onEditar={() => console.log("Editar perfil")}
-                        />
+                        nombre={perfil?.nombre || "Juan Pérez"}
+                        rol={perfil?.rol || "Cliente"}
+                        email={user?.email || "juan.perez@example.com"}
+                        telefono={perfil?.telefono || "+56 9 1234 5678"}
+                        imagen={perfil?.imagen || "/path/to/image.jpg"}
+                        onEditar={() => console.log("Editar perfil")}
+                    />
                     {perfil?.rol?.toLowerCase() === "admin" ? (
                         <AdminOptions
-                            onSelect={(option) => console.log("Seleccionado:", option)}
+                            onSelect={handleSelect}
                         />
                     ) : (
                         <p>Perfil de usuario</p>
