@@ -6,13 +6,13 @@ import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 
 interface Producto {
-  nombre: string;
-  descripcion: string;
-  precio: number;
-  imagen: File | string | null;
-  categoriaId: string;
-  toppingId: string;
-  rellenoId: string;
+    nombre: string;
+    descripcion: string;
+    precio: number;
+    imagen: File | string | null;
+    categoriaId: string;
+    toppingId: string;
+    rellenoId: string;
 }
 
 export default function CrearProductoPage() {
@@ -63,24 +63,32 @@ export default function CrearProductoPage() {
 
     // 🧾 Actualizar campos
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >
     ) => {
         const target = e.target as HTMLInputElement;
-        const value = target.type === "checkbox" ? target.checked : target.value;
+        let value: any;
+
+        if (target.type === "checkbox") {
+            value = target.checked;
+        } else if (target.type === "number") {
+            value = Number(target.value);
+        } else if (target.type === "file") {
+            const file = target.files?.[0];
+            if (!file) return;
+
+            const url = URL.createObjectURL(file);
+            setPreview(url); // 👈 muestra vista previa
+            value = file.name; // o guarda el file si prefieres: value = file;
+        } else {
+            value = target.value;
+        }
+
         setProducto((prev) => ({
             ...prev,
-            [target.name]: target.type === "number" ? Number(value) : value,
+            [target.name]: value,
         }));
-    };
-
-    // 🖼️ Manejar subida de imagen
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const url = URL.createObjectURL(file);
-        setPreview(url);
-        setProducto((prev) => ({ ...prev, imagen: file.name }));
     };
 
     // 💾 Crear producto
@@ -134,44 +142,63 @@ export default function CrearProductoPage() {
                         {/* Imagen */}
                         <div className="flex flex-col items-center justify-center bg-[#C72C2F] text-white rounded-2xl h-[380px] relative overflow-hidden">
                             {preview ? (
-                                <img
-                                    src={preview}
-                                    alt="Vista previa"
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
                                 <>
-                                    <label
-                                        htmlFor="imagen"
-                                        className="flex flex-col items-center justify-center cursor-pointer"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-16 w-16 mb-2"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            strokeWidth={2}
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 4v16m8-8H4"
-                                            />
-                                        </svg>
-                                        <p className="text-center font-medium">
-                                            Subir foto del producto final
-                                        </p>
-                                    </label>
-                                    <input
-                                        type="file"
-                                        name="imagen"
-                                        accept="image/*"
-                                        onChange={(e) => setProducto({ ...producto, imagen: e.target.files?.[0] || null })}
+                                    <img
+                                        src={preview}
+                                        alt="Vista previa"
+                                        className="w-full h-full object-cover"
                                     />
+                                    {/* 🔘 Botón para quitar imagen */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setPreview(null);
+                                            setProducto({ ...producto, imagen: null });
+                                        }}
+                                        className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
+                                        title="Quitar imagen"
+                                    >
+                                        ✕
+                                    </button>
                                 </>
+                            ) : (
+                                <label
+                                    htmlFor="imagen"
+                                    className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-16 w-16 mb-2"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <p className="text-center font-medium">
+                                        Subir foto del producto final
+                                    </p>
+                                </label>
                             )}
+
+                            <input
+                                id="imagen"
+                                type="file"
+                                name="imagen"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const url = URL.createObjectURL(file);
+                                    setPreview(url);
+                                    setProducto({ ...producto, imagen: file });
+                                }}
+                            />
                         </div>
+
+
 
                         {/* Campos de texto */}
                         <div className="flex flex-col gap-5">

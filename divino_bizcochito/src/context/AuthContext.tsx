@@ -93,6 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // 🔹 Cerrar sesión
   const handleLogout = async () => {
+    console.log("🔹 handleLogout ejecutado");
     await supabase.auth.signOut();
     setUser(null);
     setPerfil(null);

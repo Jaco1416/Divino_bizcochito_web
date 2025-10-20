@@ -65,7 +65,7 @@ function LoginCard() {
                     <button
                         type="submit"
                         className="w-full bg-white text-[#C72C2F] font-semibold py-3 rounded-md
-                       shadow-lg hover:bg-red-500 hover:text-white active:scale-[0.99] transition"
+                       shadow-lg hover:bg-red-500 hover:text-white active:scale-[0.99] transition cursor-pointer"
                     >
                         Iniciar sesión
                     </button>

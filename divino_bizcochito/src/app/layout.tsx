@@ -36,7 +36,7 @@ export default function RootLayout({
           <AlertProvider>
             <Alert /> {/* Renderiza las alertas globales */}
             <Navbar />
-            <main className="flex-grow">{children}</main>
+            <main className="flex-grow bg-[#ffffff]">{children}</main>
             <Footer />
           </AlertProvider>
         </AuthProvider>

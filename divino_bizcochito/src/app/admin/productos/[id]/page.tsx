@@ -10,26 +10,25 @@ interface Producto {
   nombre: string;
   descripcion: string;
   precio: number;
-  imagen: string;
-  categoria_id?: string;
-  topping_id?: string;
-  relleno_id?: string;
-  disponible: boolean;
+  imagen: File | string | null;
+  categoriaId?: string;
+  toppingId?: string;
+  rellenoId?: string;
 }
 
 export default function EditarProductoPage() {
   const { id } = useParams();
+  const productId = Array.isArray(id) ? id[0] : id; // aseguras que sea un string
   const router = useRouter();
 
   const [producto, setProducto] = useState<Producto>({
     nombre: "",
     descripcion: "",
     precio: 0,
-    imagen: "",
-    categoria_id: "",
-    topping_id: "",
-    relleno_id: "",
-    disponible: true,
+    imagen: null,
+    categoriaId: "",
+    toppingId: "",
+    rellenoId: "",
   });
 
   const [categorias, setCategorias] = useState<any[]>([]);
@@ -39,12 +38,13 @@ export default function EditarProductoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+
   // 🔁 Cargar datos del producto + listas
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [prodRes, catRes, topRes, relRes] = await Promise.all([
-          fetch(`/api/producto?id=${id}`),
+          fetch(`/api/productos?id=${id}`),
           fetch("/api/categorias"),
           fetch("/api/toppings"),
           fetch("/api/relleno"),
@@ -58,8 +58,8 @@ export default function EditarProductoPage() {
         ]);
 
         if (prodRes.ok) {
-          setProducto(prodData[0]);
-          setPreview(prodData[0]?.imagen || "");
+          setProducto(prodData);
+          setPreview(prodData?.imagen || "");
         }
 
         if (catRes.ok) setCategorias(catData);
@@ -104,10 +104,28 @@ export default function EditarProductoPage() {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/producto", {
+      const formData = new FormData();
+
+      formData.append("id", String(productId));
+      formData.append("nombre", producto.nombre);
+      formData.append("descripcion", producto.descripcion);
+      formData.append("precio", producto.precio.toString());
+      formData.append("categoriaId", producto.categoriaId || "");
+      formData.append("toppingId", producto.toppingId || "");
+      formData.append("rellenoId", producto.rellenoId || "");
+
+      // ✅ Manejar correctamente imagen nueva o existente
+      if (producto.imagen instanceof File) {
+        // Si hay nueva imagen seleccionada
+        formData.append("imagen", producto.imagen);
+      } else if (typeof producto.imagen === "string") {
+        // Si se mantiene la URL existente
+        formData.append("imagenUrl", producto.imagen);
+      }
+
+      const res = await fetch("/api/productos", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...producto, id }),
+        body: formData, // 👈 Enviamos FormData, sin headers manuales
       });
 
       const data = await res.json();
@@ -122,6 +140,7 @@ export default function EditarProductoPage() {
       setSaving(false);
     }
   };
+
 
   if (loading)
     return <p className="text-center mt-10 text-gray-600">Cargando producto...</p>;
@@ -250,7 +269,7 @@ export default function EditarProductoPage() {
                 </label>
                 <select
                   name="topping_id"
-                  value={producto.topping_id || ""}
+                  value={producto.toppingId || ""}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                 >
@@ -270,7 +289,7 @@ export default function EditarProductoPage() {
                 </label>
                 <select
                   name="relleno_id"
-                  value={producto.relleno_id || ""}
+                  value={producto.rellenoId || ""}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                 >
@@ -290,7 +309,7 @@ export default function EditarProductoPage() {
                 </label>
                 <select
                   name="categoria_id"
-                  value={producto.categoria_id || ""}
+                  value={producto.categoriaId || ""}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                 >
