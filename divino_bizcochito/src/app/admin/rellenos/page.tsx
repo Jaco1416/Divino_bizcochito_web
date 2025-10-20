@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import RellenoTable from "@/app/components/RellenosTable/RellenosTable";
 import ProtectedRoute from '@/app/components/protectedRoute/ProtectedRoute';
 import BackButton from '@/app/components/BackButton/BackButton';
+import Link from 'next/link';
 
-function RellenosPage() {
+export default function RellenosPage() {
 
    const [rellenos, setRellenos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,21 +22,42 @@ function RellenosPage() {
     fetchRellenos();
   }, []);
 
-  if (loading) return <p className="text-center mt-6">Cargando rellenos...</p>;
-
-  return (
+  if (loading) { 
+    return( 
     <ProtectedRoute role="admin">
-      <BackButton />
-      <div>
-        <h1 className="text-2xl font-bold text-center text-[#c90c0c]">Rellenos</h1>
-        {loading ? (
-          <p className="text-center text-gray-600">Cargando rellenos...</p>
-        ) : (
-          <RellenoTable rellenos={rellenos} />
-        )}
+      <div className="min-h-screen flex items-center justify-center text-[#530708] font-medium">
+      Cargando rellenos...
       </div>
     </ProtectedRoute>
   )
 }
+  return (
+<ProtectedRoute role="admin">
+      <div className="min-h-screen px-6 py-10">
+        <div className="max-w-6xl mx-auto">
+          {/*BTN volver*/}
+          <div className="flex items-center justify-between mb-6">
+            <BackButton label="Volver al panel" />
+          </div>
 
-export default RellenosPage
+          {/* Título de la página */}
+          <h1 className="text-3xl font-bold text-[#530708] text-center mb-8">
+            Lista de rellenos
+          </h1>
+
+          {/*TBL rellenos */}
+          <RellenoTable rellenos={rellenos} />
+
+          {/*BTN nuevo relleno*/}
+          <div className="mt-6 flex justify-start">
+            <Link href="/admin/rellenos/crear">
+              <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-5 py-2 rounded-lg transition">
+                + Nuevo relleno
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </ProtectedRoute>
+  )
+}

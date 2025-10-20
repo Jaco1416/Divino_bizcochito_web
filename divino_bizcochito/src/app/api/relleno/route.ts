@@ -34,7 +34,6 @@ export async function POST(request: Request) {
         {
           nombre: body.nombre,
           descripcion: body.descripcion || null,
-          disponible: body.disponible ?? true,
         },
       ])
       .select();
