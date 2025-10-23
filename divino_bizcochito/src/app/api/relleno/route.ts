@@ -6,8 +6,24 @@ const TABLE_NAME = "Relleno";
 // ============================================================
 // 📥 GET → Obtener todos los rellenos
 // ============================================================
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (id) {
+      // 🔹 Si viene ?id=..., trae solo ese registro
+      const { data, error } = await supabaseAdmin
+        .from(TABLE_NAME)
+        .select("*")
+        .eq("id", id)
+        .single(); // devuelve solo uno
+
+      if (error) throw error;
+      return NextResponse.json(data, { status: 200 });
+    }
+
+    // 🔹 Si no viene id, devuelve todos
     const { data, error } = await supabaseAdmin
       .from(TABLE_NAME)
       .select("*")

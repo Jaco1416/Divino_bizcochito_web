@@ -37,7 +37,7 @@ export default function RellenosPage() {
         <div className="max-w-6xl mx-auto">
           {/*BTN volver*/}
           <div className="flex items-center justify-between mb-6">
-            <BackButton label="Volver al panel" />
+            <BackButton label="Volver al panel" to="/views/perfil" />
           </div>
 
           {/* Título de la página */}

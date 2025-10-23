@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
@@ -63,7 +64,7 @@ export default function CrearRellenoPage() {
     <ProtectedRoute role="admin">
       <div className="min-h-screen bg-white py-10 px-6">
         <div className="max-w-4xl mx-auto">
-          <BackButton label="Volver a la lista" />
+          <BackButton label="Volver a la lista" to="/admin/rellenos"/>
 
           <h1 className="text-3xl font-bold text-[#C72C2F] text-center mb-8">
             Crear relleno
