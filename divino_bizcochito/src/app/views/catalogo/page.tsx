@@ -9,31 +9,47 @@ import { useRouter } from "next/navigation";
 interface Producto {
   id: string;
   nombre: string;
-  categoria: string;
+  categoriaId: string;
   precio: number;
   descripcion: string;
   imagen: string;
+}
+
+interface Categoria {
+  id: string;
+  nombre: string;
+  descripcion: string;
 }
 
 function CatalogoPage() {
   const router = useRouter();
   const { showAlert } = useAlert();
   const [productos, setProductos] = useState<Producto[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProductId, setDeleteProductId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchProductosCategoria = async () => {
       const response = await fetch("/api/productos");
+      const responseCategorias = await fetch("/api/categorias");
       const data = await response.json();
       setProductos(data);
+
+      const dataCategorias = await responseCategorias.json();
+      setCategorias(dataCategorias);
     };
 
-    fetchProductos();
+
+    fetchProductosCategoria();
   }, []);
 
   const handleEdit = (id: string) => {
     router.push(`/admin/productos/${id}`);
+  };
+  const handleViewProduct = (id: string) => {
+    router.push(`/views/producto/${id}`);
+
   };
 
   const handleDeleteClick = (id: string) => {
@@ -71,18 +87,30 @@ function CatalogoPage() {
       </h1>
 
       {/* 🧱 Grid de productos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
+      <div className="
+    grid 
+    grid-cols-1 
+    sm:grid-cols-2 
+    md:grid-cols-2 
+    lg:grid-cols-4 
+    gap-8 
+    justify-center 
+    place-items-center 
+    max-w-7xl 
+    mx-auto
+    px-4
+  ">
         {productos.map((producto) => (
           <ProductCard
             key={producto.id}
             nombre={producto.nombre}
-            categoria={producto.categoria}
+            categoriaId={categorias.map(cat => cat.id === producto.categoriaId ? cat.nombre : '').find(name => name !== undefined) || 'Sin categoría'}
             precio={producto.precio}
             descripcion={producto.descripcion}
             imagen={producto.imagen}
             onEdit={() => handleEdit(producto.id)}
             onDelete={() => handleDeleteClick(producto.id)}
-            onViewRecipe={() => handleEdit(producto.id)}
+            onViewRecipe={() => handleViewProduct(producto.id)}
           />
         ))}
       </div>

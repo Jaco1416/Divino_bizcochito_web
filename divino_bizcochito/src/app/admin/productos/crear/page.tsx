@@ -152,7 +152,7 @@ export default function CrearProductoPage() {
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setPreview(null);
+                                            setPreview("");
                                             setProducto({ ...producto, imagen: null });
                                         }}
                                         className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center transition"
