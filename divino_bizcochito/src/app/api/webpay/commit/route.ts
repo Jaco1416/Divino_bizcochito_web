@@ -83,7 +83,7 @@ export async function GET(req: Request) {
             perfilId: carrito.perfilid,
             tipoEntrega: carrito.tipoentrega,
             datosEnvio: carrito.datosenvio,
-            estado: 'Pagado',
+            estado: 'Recibido',
             total: amount,
             createdAt: timestamp
           }
