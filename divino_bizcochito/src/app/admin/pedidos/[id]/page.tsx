@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
@@ -33,9 +32,7 @@ interface Pedido {
     fechaCreacion: string;
     fechaEntrega: string | null;
     total: number;
-    perfil: {
-        nombre: string;
-    };
+    perfil: { nombre: string };
     detalle_pedido: DetallePedido[];
 }
 
@@ -55,41 +52,17 @@ export default function DetallePedidoPage() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
 
-    // 🔁 Obtener pedido y detalles
+    // 🔁 Obtener pedido desde el backend
     const fetchPedido = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from("Pedido")
-                .select(
-                    `
-          id,
-          tipoEntrega,
-          datosEnvio,
-          estado,
-          fechaCreacion,
-          fechaEntrega,
-          total,
-          perfil:fk_pedido_perfiles ( nombre ),
-          detalle_pedido:DetallePedido (
-            id,
-            cantidad,
-            precioUnitario,
-            nombreProducto,
-            imagenProducto,
-            toppingId,
-            rellenoId
-          )
-        `
-                )
-                .eq("id", id)
-                .single();
-
-            if (error) throw error;
-            setPedido(data as Pedido);
+            const res = await fetch(`/api/pedidos/${id}`);
+            if (!res.ok) throw new Error("Error al obtener pedido");
+            const data = await res.json();
+            setPedido(data);
             if (data?.fechaEntrega) setSelectedDate(new Date(data.fechaEntrega));
         } catch (err) {
-            console.error(err);
+            console.error("❌ Error al obtener pedido:", err);
         } finally {
             setLoading(false);
         }
@@ -99,67 +72,62 @@ export default function DetallePedidoPage() {
         fetchPedido();
     }, [id]);
 
-    // 🔄 Avanzar estado
+    // 🔄 Avanzar estado (usa API)
     const avanzarEstado = async () => {
         if (!pedido) return;
-        const indexActual = estadosOrdenados.indexOf(pedido.estado);
-        const siguienteEstado = estadosOrdenados[indexActual + 1];
-        if (!siguienteEstado || pedido.estado === "Entregado" || pedido.estado === "Cancelado") {
-            console.warn("No se puede avanzar más el estado del pedido.");
-            return;
-        }
-
         try {
             setUpdating(true);
-            const { error } = await supabase
-                .from("Pedido")
-                .update({ estado: siguienteEstado })
-                .eq("id", pedido.id);
+            const res = await fetch(`/api/pedidos/${pedido.id}/estado`, {
+                method: "PUT",
+            });
+            if (!res.ok) throw new Error("Error al avanzar estado");
 
-            if (error) throw error;
-            setPedido({ ...pedido, estado: siguienteEstado });
-            console.log(`✅ Estado del pedido #${pedido.id} actualizado a: ${siguienteEstado}`);
+            const result = await res.json();
+            console.log("✅", result.message);
+            await fetchPedido(); // 🔁 refresca datos
         } catch (err) {
-            console.error("❌ Error al avanzar el estado del pedido:", err);
+            console.error("❌ Error al avanzar estado:", err);
         } finally {
             setModalOpen(false);
             setUpdating(false);
         }
     };
 
-    // ❌ Cancelar pedido
+    // ❌ Cancelar pedido (usa API)
     const cancelarPedido = async () => {
         if (!pedido) return;
         try {
             setUpdating(true);
-            const { error } = await supabase
-                .from("Pedido")
-                .update({ estado: "Cancelado" })
-                .eq("id", pedido.id);
-            if (error) throw error;
-            setPedido({ ...pedido, estado: "Cancelado" });
+            const res = await fetch(`/api/pedidos/${pedido.id}/cancelar`, {
+                method: "PUT",
+            });
+            if (!res.ok) throw new Error("Error al cancelar pedido");
+
+            console.log("🛑 Pedido cancelado correctamente");
+            await fetchPedido();
         } catch (err) {
-            console.error(err);
+            console.error("❌ Error al cancelar pedido:", err);
         } finally {
-            fetchPedido();
             setUpdating(false);
         }
     };
 
-    // 📅 Actualizar fecha de entrega
+    // 📅 Actualizar fecha de entrega (usa API)
     const actualizarFechaEntrega = async (date: Date) => {
         if (!pedido) return;
         try {
             setUpdating(true);
-            const { error } = await supabase
-                .from("Pedido")
-                .update({ fechaEntrega: date.toISOString() })
-                .eq("id", pedido.id);
+            const res = await fetch(`/api/pedidos/${pedido.id}/entrega`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fechaEntrega: date.toISOString() }),
+            });
 
-            if (error) throw error;
+            if (!res.ok) throw new Error("Error al actualizar fecha de entrega");
+
             setSelectedDate(date);
-            setPedido({ ...pedido, fechaEntrega: date.toISOString() });
             console.log(`📅 Fecha de entrega actualizada a: ${date.toISOString()}`);
+            await fetchPedido();
         } catch (err) {
             console.error("❌ Error al actualizar la fecha de entrega:", err);
         } finally {
@@ -167,12 +135,34 @@ export default function DetallePedidoPage() {
         }
     };
 
+    // 🗑️ Eliminar pedido (usa API DELETE)
+    const eliminarPedido = async () => {
+        if (!pedido) return;
+        if (!confirm("¿Seguro que deseas eliminar este pedido?")) return;
+
+        try {
+            setUpdating(true);
+            const res = await fetch(`/api/pedidos/${pedido.id}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) throw new Error("Error al eliminar pedido");
+            alert("Pedido eliminado correctamente ✅");
+            window.location.href = "/admin/pedidos"; // redirige al listado
+        } catch (err) {
+            console.error("❌ Error al eliminar pedido:", err);
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    // 🧩 Carga y renderizado
     if (loading) return <p className="text-center mt-8">Cargando pedido...</p>;
     if (!pedido) return <p className="text-center mt-8">Pedido no encontrado</p>;
 
     return (
         <div className="max-w-5xl mx-auto mt-10 mb-20 space-y-10">
-            <BackButton/>
+            <BackButton />
+
             {/* 🧁 Tabla de productos */}
             <section>
                 <h2 className="text-xl font-semibold mb-3 text-[#530708] text-center">
@@ -231,11 +221,7 @@ export default function DetallePedidoPage() {
                     <div className="flex items-center gap-3">
                         <DatePicker
                             selected={selectedDate}
-                            onChange={(date) => {
-                                if (!date) return;
-                                setSelectedDate(date); // ✅ Actualiza el input al instante
-                                actualizarFechaEntrega(date); // ✅ Luego guarda en Supabase
-                            }}
+                            onChange={(date) => date && actualizarFechaEntrega(date)}
                             dateFormat="dd/MM/yyyy"
                             minDate={new Date()}
                             placeholderText="Selecciona una fecha"
@@ -251,22 +237,21 @@ export default function DetallePedidoPage() {
 
                 <p><strong>Cliente:</strong> {pedido.perfil?.nombre}</p>
                 <p><strong>Tipo de entrega:</strong> {pedido.tipoEntrega}</p>
-                <p ><strong>Pedido: </strong>
-                    <span className={`
-      px-3 py-1 rounded-full text-sm font-semibold
-      ${pedido.estado === "Recibido"
-                            ? "bg-blue-100 text-blue-700"
-                            : pedido.estado === "En Producción"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : pedido.estado === "Listo"
-                                    ? "bg-green-100 text-green-700"
-                                    : pedido.estado === "Entregado"
-                                        ? "bg-gray-200 text-gray-700"
-                                        : pedido.estado === "Cancelado"
-                                            ? "bg-red-100 text-red-700"
-                                            : ""
-                        }
-                        `}
+                <p>
+                    <strong>Estado: </strong>
+                    <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${pedido.estado === "Recibido"
+                                ? "bg-blue-100 text-blue-700"
+                                : pedido.estado === "En Producción"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : pedido.estado === "Listo"
+                                        ? "bg-green-100 text-green-700"
+                                        : pedido.estado === "Entregado"
+                                            ? "bg-gray-200 text-gray-700"
+                                            : pedido.estado === "Cancelado"
+                                                ? "bg-red-100 text-red-700"
+                                                : ""
+                            }`}
                     >
                         {pedido.estado}
                     </span>
@@ -284,13 +269,11 @@ export default function DetallePedidoPage() {
                 )}
 
                 <p><strong>Fecha creación:</strong> {new Date(pedido.fechaCreacion).toLocaleString()}</p>
-                {pedido.fechaEntrega && (
+                {pedido.fechaEntrega ? (
                     <p><strong>Fecha entrega:</strong> {new Date(pedido.fechaEntrega).toLocaleString()}</p>
-
-                )}
-                {!pedido.fechaEntrega && (
+                ) : (
                     <p className="text-sm text-amber-600 mt-1">
-                        <strong className="text-gray-800">Fecha entrega:</strong>⚠️ No se ha establecido una fecha de entrega.
+                        ⚠️ No se ha establecido una fecha de entrega.
                     </p>
                 )}
                 <p><strong>Total:</strong> ${pedido.total.toLocaleString("es-CL")}</p>
@@ -301,32 +284,37 @@ export default function DetallePedidoPage() {
                 <button
                     onClick={cancelarPedido}
                     disabled={updating || pedido.estado === "Cancelado" || pedido.estado === "Entregado"}
-                    className={`
-                                px-4 py-2 rounded-md font-semibold text-white transition
-                                ${pedido.estado === "Cancelado" || pedido.estado === "Entregado"
-                                                        ? "bg-gray-400 cursor-not-allowed"
-                                                        : "bg-red-600 hover:bg-red-700"}
-                                disabled:bg-gray-400 disabled:cursor-default
-                            `}
+                    className={`px-4 py-2 rounded-md font-semibold text-white transition ${pedido.estado === "Cancelado" || pedido.estado === "Entregado"
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-red-600 hover:bg-red-700 cursor-pointer"
+                        }`}
                 >
                     Cancelar
                 </button>
 
-                <button
-                    onClick={() => setModalOpen(true)}
-                    disabled={
-                        updating ||
-                        pedido.estado === "Entregado" ||
-                        pedido.estado === "Cancelado"
-                    }
-                    className={`px-4 py-2 rounded-md font-semibold cursor-pointer text-white ${pedido.estado === "Entregado" || pedido.estado === "Cancelado"
-                        ? "bg-gray-400 disabled:cursor-default"
-                        : "bg-green-600 hover:bg-green-700"
-                        }`}
-                >
-                    Avanzar estado
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setModalOpen(true)}
+                        disabled={
+                            updating || pedido.estado === "Entregado" || pedido.estado === "Cancelado"
+                        }
+                        className={`px-4 py-2 rounded-md font-semibold text-white ${pedido.estado === "Entregado" || pedido.estado === "Cancelado"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-green-600 hover:bg-green-700  cursor-pointer"
+                            }`}
+                    >
+                        Avanzar estado
+                    </button>
+
+                    <button
+                        onClick={eliminarPedido}
+                        className="px-4 py-2 rounded-md font-semibold text-white bg-[#530708] hover:bg-[#3d0606] cursor-pointer"
+                    >
+                        Eliminar
+                    </button>
+                </div>
             </div>
+
             <ConfirmModal
                 isOpen={modalOpen}
                 title="Avanzar estado del pedido"
