@@ -36,14 +36,6 @@ interface Pedido {
     detalle_pedido: DetallePedido[];
 }
 
-const estadosOrdenados = [
-    "Recibido",
-    "En Producción",
-    "Listo",
-    "Entregado",
-    "Cancelado",
-];
-
 export default function DetallePedidoPage() {
     const { id } = useParams();
     const [pedido, setPedido] = useState<Pedido | null>(null);

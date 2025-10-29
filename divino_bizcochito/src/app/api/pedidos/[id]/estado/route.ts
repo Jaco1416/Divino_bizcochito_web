@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { sendEstadoEmail } from '@/lib/sendEmail'
 
-export async function PUT(
+export async function PUT (
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -25,10 +25,14 @@ export async function PUT(
     }
 
     // 🔹 2. Obtener el usuario desde Supabase Auth
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(pedido.perfilId)
+    const { data: userData, error: userError } =
+      await supabaseAdmin.auth.admin.getUserById(pedido.perfilId)
 
     if (userError || !userData?.user) {
-      console.error('❌ No se encontró el usuario del pedido:', userError?.message)
+      console.error(
+        '❌ No se encontró el usuario del pedido:',
+        userError?.message
+      )
       return NextResponse.json(
         { error: 'No se encontró el usuario asociado al pedido' },
         { status: 404 }
@@ -36,8 +40,23 @@ export async function PUT(
     }
 
     const user = userData.user
-    const email = user.email || "divinobizcochito@gmail.com"
-    const nombre = user.user_metadata?.nombre || 'Cliente'
+    const email = user.email || 'divinobizcochito@gmail.com'
+
+    // 🔹 2.5 Obtener el nombre desde la tabla Perfil
+    const { data: perfil, error: perfilError } = await supabaseAdmin
+      .from('Perfil')
+      .select('nombre')
+      .eq('id', pedido.perfilId)
+      .single()
+
+    if (perfilError) {
+      console.warn(
+        '⚠️ No se pudo obtener el nombre desde Perfil:',
+        perfilError.message
+      )
+    }
+
+    const nombre = perfil?.nombre || 'Cliente'
 
     // 🔹 3. Estados válidos y ordenados
     const estadosOrdenados = [
@@ -90,10 +109,17 @@ export async function PUT(
 
     // 🔹 6. Enviar correo al usuario (ajustado para Nodemailer)
     try {
-      const info = await sendEstadoEmail(email, nombre, siguienteEstado, Number(id))
+      const info = await sendEstadoEmail(
+        email,
+        nombre,
+        siguienteEstado,
+        Number(id)
+      )
 
       if (info?.accepted?.length) {
-        console.log(`📧 Correo enviado correctamente a ${email} (${siguienteEstado})`)
+        console.log(
+          `📧 Correo enviado correctamente a ${email} (${siguienteEstado})`
+        )
       } else {
         console.warn(`⚠️ No se pudo confirmar el envío del correo a ${email}`)
       }

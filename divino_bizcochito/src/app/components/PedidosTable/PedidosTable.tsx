@@ -94,20 +94,24 @@ export default function PedidosTable() {
                                     </td>
 
                                     <td
-                                        className={`px-4 py-2 border border-[#8B3A3A] font-semibold ${p.estado === "Recibido"
-                                                ? "text-blue-300"
-                                                : p.estado === "En producción"
-                                                    ? "text-yellow-300"
-                                                    : p.estado === "Listo"
-                                                        ? "text-green-300"
-                                                        : p.estado === "Entregado"
-                                                            ? "text-purple-300"
-                                                            : p.estado === "Cancelado"
-                                                                ? "text-red-500"
-                                                                : "text-white"
-                                            }`}
+                                        className={`px-4 py-2 border border-[#8B3A3A] font-semibold`}
                                     >
-                                        {p.estado}
+                                        <span
+                                            className={`px-3 py-1 rounded-md text-xs font-semibold ${p.estado === "Recibido"
+                                                ? "bg-blue-300 text-blue-100"
+                                                : p.estado === "En producción"
+                                                    ? "bg-yellow-300 text-yellow-100"
+                                                    : p.estado === "Listo"
+                                                        ? "bg-purple-300 text-purple-100"
+                                                        : p.estado === "Entregado"
+                                                            ? "bg-green-600 text-green-100"
+                                                            : p.estado === "Cancelado"
+                                                                ? "bg-red-500 text-red-100"
+                                                                : "bg-white text-black"
+                                            }`}
+                                        >
+                                            {p.estado}
+                                        </span>
                                     </td>
 
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
