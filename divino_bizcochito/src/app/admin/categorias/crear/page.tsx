@@ -1,105 +1,80 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 
-interface Relleno {
-  id?: string;
+interface Categoria {
   nombre: string;
   descripcion: string;
 }
 
-export default function EditarRellenoPage() {
-  const { id } = useParams();
+export default function CrearCategoriaPage() {
   const router = useRouter();
 
-  const [relleno, setRelleno] = useState<Relleno>({
+  const [categoria, setCategoria] = useState<Categoria>({
     nombre: "",
     descripcion: "",
   });
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  // 🔁 Obtener datos del relleno
-  useEffect(() => {
-    const fetchRelleno = async () => {
-      try {
-        const res = await fetch(`/api/relleno?id=${id}`);
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error || "Error al obtener el relleno");
-        setRelleno(data); // ✅ asumimos que viene un array con un solo elemento
-      } catch (error) {
-        console.error("❌ Error al cargar relleno:", error);
-        alert("No se pudo cargar el relleno");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRelleno();
-  }, [id]);
 
   // 🧾 Manejar cambios de campos
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setRelleno((prev) => ({ ...prev, [name]: value }));
+    setCategoria((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 💾 Guardar cambios
+  // 💾 Guardar nueva categoría
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     try {
-      const res = await fetch("/api/relleno", {
-        method: "PUT",
+      const res = await fetch("/api/categorias", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...relleno, id }),
+        body: JSON.stringify(categoria),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al actualizar relleno");
+      if (!res.ok) throw new Error(data.error || "Error al crear categoría");
 
-      alert("✅ Relleno actualizado correctamente");
-      router.push("/admin/rellenos");
+      alert("✅ Categoría creada correctamente");
+      router.push("/admin/categorias");
     } catch (error) {
-      console.error("❌ Error al actualizar relleno:", error);
-      alert("❌ No se pudo actualizar el relleno");
+      console.error("❌ Error al crear categoría:", error);
+      alert("❌ No se pudo crear la categoría");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading)
-    return <p className="text-center mt-10 text-gray-600">Cargando relleno...</p>;
-
   return (
     <ProtectedRoute role="admin">
       <div className="min-h-screen bg-white py-10 px-6">
-        <div className="max-w-3xl mx-auto">
-          <BackButton label="Volver a la lista" to="/admin/rellenos" />
+        <div className="max-w-4xl mx-auto">
+          <BackButton label="Volver al panel" to="/admin/categorias" />
 
           <h1 className="text-3xl font-bold text-[#C72C2F] text-center mb-8">
-            Editar relleno
+            Crear categoría
           </h1>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* Nombre */}
             <div>
               <label className="block text-[#530708] font-medium mb-1">
-                Nombre del relleno
+                Nombre de la categoría
               </label>
               <input
                 type="text"
                 name="nombre"
-                value={relleno.nombre}
+                value={categoria.nombre}
                 onChange={handleChange}
+                required
                 placeholder="Ingresar nombre..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
               />
@@ -112,8 +87,9 @@ export default function EditarRellenoPage() {
               </label>
               <textarea
                 name="descripcion"
-                value={relleno.descripcion}
+                value={categoria.descripcion}
                 onChange={handleChange}
+                required
                 placeholder="Ingresar descripción..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
               />
@@ -126,7 +102,7 @@ export default function EditarRellenoPage() {
                 disabled={saving}
                 className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition"
               >
-                {saving ? "Guardando..." : "Guardar cambios"}
+                {saving ? "Guardando..." : "Crear categoría"}
               </button>
             </div>
           </form>

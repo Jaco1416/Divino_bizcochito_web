@@ -5,17 +5,17 @@ import { useParams, useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 
-interface Relleno {
+interface Categoria {
   id?: string;
   nombre: string;
   descripcion: string;
 }
 
-export default function EditarRellenoPage() {
+export default function EditarCategoriaPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [relleno, setRelleno] = useState<Relleno>({
+  const [categoria, setCategoria] = useState<Categoria>({
     nombre: "",
     descripcion: "",
   });
@@ -23,32 +23,32 @@ export default function EditarRellenoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // 🔁 Obtener datos del relleno
+  // 🔁 Obtener datos de la categoría
   useEffect(() => {
-    const fetchRelleno = async () => {
+    const fetchCategoria = async () => {
       try {
-        const res = await fetch(`/api/relleno?id=${id}`);
+        const res = await fetch(`/api/categorias?id=${id}`);
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || "Error al obtener el relleno");
-        setRelleno(data); // ✅ asumimos que viene un array con un solo elemento
+        if (!res.ok) throw new Error(data.error || "Error al obtener la categoría");
+        setCategoria(data);
       } catch (error) {
-        console.error("❌ Error al cargar relleno:", error);
-        alert("No se pudo cargar el relleno");
+        console.error("❌ Error al cargar categoría:", error);
+        alert("No se pudo cargar la categoría");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRelleno();
+    fetchCategoria();
   }, [id]);
 
-  // 🧾 Manejar cambios de campos
+  // 🧾 Manejar cambios
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setRelleno((prev) => ({ ...prev, [name]: value }));
+    setCategoria((prev) => ({ ...prev, [name]: value }));
   };
 
   // 💾 Guardar cambios
@@ -57,48 +57,48 @@ export default function EditarRellenoPage() {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/relleno", {
+      const res = await fetch("/api/categorias", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...relleno, id }),
+        body: JSON.stringify({ ...categoria, id }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al actualizar relleno");
+      if (!res.ok) throw new Error(data.error || "Error al actualizar categoría");
 
-      alert("✅ Relleno actualizado correctamente");
-      router.push("/admin/rellenos");
+      alert("✅ Categoría actualizada correctamente");
+      router.push("/admin/categorias");
     } catch (error) {
-      console.error("❌ Error al actualizar relleno:", error);
-      alert("❌ No se pudo actualizar el relleno");
+      console.error("❌ Error al actualizar categoría:", error);
+      alert("❌ No se pudo actualizar la categoría");
     } finally {
       setSaving(false);
     }
   };
 
   if (loading)
-    return <p className="text-center mt-10 text-gray-600">Cargando relleno...</p>;
+    return <p className="text-center mt-10 text-gray-600">Cargando categoría...</p>;
 
   return (
     <ProtectedRoute role="admin">
       <div className="min-h-screen bg-white py-10 px-6">
         <div className="max-w-3xl mx-auto">
-          <BackButton label="Volver a la lista" to="/admin/rellenos" />
+          <BackButton label="Volver a la lista" to="/admin/categorias" />
 
           <h1 className="text-3xl font-bold text-[#C72C2F] text-center mb-8">
-            Editar relleno
+            Editar categoría
           </h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Nombre */}
             <div>
               <label className="block text-[#530708] font-medium mb-1">
-                Nombre del relleno
+                Nombre de la categoría
               </label>
               <input
                 type="text"
                 name="nombre"
-                value={relleno.nombre}
+                value={categoria.nombre}
                 onChange={handleChange}
                 placeholder="Ingresar nombre..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
@@ -112,7 +112,7 @@ export default function EditarRellenoPage() {
               </label>
               <textarea
                 name="descripcion"
-                value={relleno.descripcion}
+                value={categoria.descripcion}
                 onChange={handleChange}
                 placeholder="Ingresar descripción..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"

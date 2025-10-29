@@ -4,10 +4,26 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 const TABLE_NAME = "Topping";
 
 // ============================================================
-// 📥 GET → Obtener todos los rellenos
+// 📥 GET → Obtener todos los toppings o uno por ID
 // ============================================================
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (id) {
+      // 🔹 Si viene ?id=..., traer solo ese registro
+      const { data, error } = await supabaseAdmin
+        .from(TABLE_NAME)
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json(data, { status: 200 });
+    }
+
+    // 🔹 Si no viene id, traer todos
     const { data, error } = await supabaseAdmin
       .from(TABLE_NAME)
       .select("*")
@@ -16,13 +32,13 @@ export async function GET() {
     if (error) throw error;
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
-    console.error("❌ Error GET /Topping:", error.message);
+    console.error("❌ Error GET /topping:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // ============================================================
-// ➕ POST → Crear un nuevo relleno
+// ➕ POST → Crear un nuevo topping
 // ============================================================
 export async function POST(request: Request) {
   try {
@@ -34,7 +50,6 @@ export async function POST(request: Request) {
         {
           nombre: body.nombre,
           descripcion: body.descripcion || null,
-          disponible: body.disponible ?? true,
         },
       ])
       .select();
@@ -42,13 +57,13 @@ export async function POST(request: Request) {
     if (error) throw error;
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
-    console.error("❌ Error POST /Topping:", error.message);
+    console.error("❌ Error POST /topping:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // ============================================================
-// 🛠️ PUT → Actualizar un relleno existente por ID
+// 🛠️ PUT → Actualizar un topping existente por ID
 // ============================================================
 export async function PUT(request: Request) {
   try {
@@ -72,13 +87,13 @@ export async function PUT(request: Request) {
     if (error) throw error;
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
-    console.error("❌ Error PUT /Topping:", error.message);
+    console.error("❌ Error PUT /topping:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // ============================================================
-// ❌ DELETE → Eliminar un relleno por ID
+// ❌ DELETE → Eliminar un topping por ID
 // ============================================================
 export async function DELETE(request: Request) {
   try {
@@ -100,7 +115,7 @@ export async function DELETE(request: Request) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("❌ Error DELETE /Topping:", error.message);
+    console.error("❌ Error DELETE /topping:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

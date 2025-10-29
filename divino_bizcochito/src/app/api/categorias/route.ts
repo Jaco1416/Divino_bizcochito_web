@@ -4,10 +4,26 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 const TABLE_NAME = "Categoria";
 
 // ============================================================
-// 📥 GET → Obtener todos los rellenos
+// 📥 GET → Obtener todas las categorías
 // ============================================================
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    // ✅ Si viene un ID, devolver solo esa categoría
+    if (id) {
+      const { data, error } = await supabaseAdmin
+        .from(TABLE_NAME)
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      return NextResponse.json(data, { status: 200 });
+    }
+
+    // ✅ Si no viene ID, listar todas
     const { data, error } = await supabaseAdmin
       .from(TABLE_NAME)
       .select("*")
@@ -16,13 +32,13 @@ export async function GET() {
     if (error) throw error;
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
-    console.error("❌ Error GET /relleno:", error.message);
+    console.error("❌ Error GET /categorias:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // ============================================================
-// ➕ POST → Crear un nuevo relleno
+// ➕ POST → Crear una nueva categoría
 // ============================================================
 export async function POST(request: Request) {
   try {
@@ -34,7 +50,6 @@ export async function POST(request: Request) {
         {
           nombre: body.nombre,
           descripcion: body.descripcion || null,
-          disponible: body.disponible ?? true,
         },
       ])
       .select();
@@ -42,13 +57,13 @@ export async function POST(request: Request) {
     if (error) throw error;
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
-    console.error("❌ Error POST /relleno:", error.message);
+    console.error("❌ Error POST /categorias:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // ============================================================
-// 🛠️ PUT → Actualizar un relleno existente por ID
+// 🛠️ PUT → Actualizar una categoría existente por ID
 // ============================================================
 export async function PUT(request: Request) {
   try {
@@ -72,13 +87,13 @@ export async function PUT(request: Request) {
     if (error) throw error;
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
-    console.error("❌ Error PUT /relleno:", error.message);
+    console.error("❌ Error PUT /categorias:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // ============================================================
-// ❌ DELETE → Eliminar un relleno por ID
+// ❌ DELETE → Eliminar una categoría por ID
 // ============================================================
 export async function DELETE(request: Request) {
   try {
@@ -96,11 +111,11 @@ export async function DELETE(request: Request) {
 
     if (error) throw error;
     return NextResponse.json(
-      { message: `Relleno ${id} eliminado correctamente` },
+      { message: `Categoría ${id} eliminada correctamente` },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("❌ Error DELETE /relleno:", error.message);
+    console.error("❌ Error DELETE /categorias:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

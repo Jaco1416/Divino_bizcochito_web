@@ -5,17 +5,17 @@ import { useParams, useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 
-interface Relleno {
+interface Topping {
   id?: string;
   nombre: string;
   descripcion: string;
 }
 
-export default function EditarRellenoPage() {
+export default function EditarToppingPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [relleno, setRelleno] = useState<Relleno>({
+  const [topping, setTopping] = useState<Topping>({
     nombre: "",
     descripcion: "",
   });
@@ -23,32 +23,32 @@ export default function EditarRellenoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // 🔁 Obtener datos del relleno
+  // 🔁 Obtener datos del topping
   useEffect(() => {
-    const fetchRelleno = async () => {
+    const fetchTopping = async () => {
       try {
-        const res = await fetch(`/api/relleno?id=${id}`);
+        const res = await fetch(`/api/toppings?id=${id}`);
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.error || "Error al obtener el relleno");
-        setRelleno(data); // ✅ asumimos que viene un array con un solo elemento
+        if (!res.ok) throw new Error(data.error || "Error al obtener el topping");
+        setTopping(data);
       } catch (error) {
-        console.error("❌ Error al cargar relleno:", error);
-        alert("No se pudo cargar el relleno");
+        console.error("❌ Error al cargar topping:", error);
+        alert("No se pudo cargar el topping");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRelleno();
+    fetchTopping();
   }, [id]);
 
-  // 🧾 Manejar cambios de campos
+  // 🧾 Manejar cambios en los campos
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setRelleno((prev) => ({ ...prev, [name]: value }));
+    setTopping((prev) => ({ ...prev, [name]: value }));
   };
 
   // 💾 Guardar cambios
@@ -57,48 +57,48 @@ export default function EditarRellenoPage() {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/relleno", {
+      const res = await fetch("/api/toppings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...relleno, id }),
+        body: JSON.stringify({ ...topping, id }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al actualizar relleno");
+      if (!res.ok) throw new Error(data.error || "Error al actualizar topping");
 
-      alert("✅ Relleno actualizado correctamente");
-      router.push("/admin/rellenos");
+      alert("✅ Topping actualizado correctamente");
+      router.push("/admin/toppings");
     } catch (error) {
-      console.error("❌ Error al actualizar relleno:", error);
-      alert("❌ No se pudo actualizar el relleno");
+      console.error("❌ Error al actualizar topping:", error);
+      alert("❌ No se pudo actualizar el topping");
     } finally {
       setSaving(false);
     }
   };
 
   if (loading)
-    return <p className="text-center mt-10 text-gray-600">Cargando relleno...</p>;
+    return <p className="text-center mt-10 text-gray-600">Cargando topping...</p>;
 
   return (
     <ProtectedRoute role="admin">
       <div className="min-h-screen bg-white py-10 px-6">
         <div className="max-w-3xl mx-auto">
-          <BackButton label="Volver a la lista" to="/admin/rellenos" />
+          <BackButton label="Volver a la lista" to="/admin/toppings" />
 
           <h1 className="text-3xl font-bold text-[#C72C2F] text-center mb-8">
-            Editar relleno
+            Editar topping
           </h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Nombre */}
             <div>
               <label className="block text-[#530708] font-medium mb-1">
-                Nombre del relleno
+                Nombre del topping
               </label>
               <input
                 type="text"
                 name="nombre"
-                value={relleno.nombre}
+                value={topping.nombre}
                 onChange={handleChange}
                 placeholder="Ingresar nombre..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
@@ -112,7 +112,7 @@ export default function EditarRellenoPage() {
               </label>
               <textarea
                 name="descripcion"
-                value={relleno.descripcion}
+                value={topping.descripcion}
                 onChange={handleChange}
                 placeholder="Ingresar descripción..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"

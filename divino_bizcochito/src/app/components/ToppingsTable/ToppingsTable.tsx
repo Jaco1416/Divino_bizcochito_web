@@ -4,59 +4,59 @@ import { useAlert } from "@/app/hooks/useAlert";
 import Link from "next/link";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 
-interface Relleno {
+interface Topping {
     id: string;
     nombre: string;
-    descripcion?: string    ;
+    descripcion?: string;
 }
 
-interface RellenoTableProps {
-    rellenos: Relleno[];
+interface ToppingTableProps {
+    toppings: Topping[];
 }
 
-export default function RellenoTable({ rellenos }: RellenoTableProps) {
+export default function ToppingsTable({ toppings }: ToppingTableProps) {
     const { showAlert } = useAlert();
 
-    // Estado local para la lista de rellenos
-    const [rellenosList, setRellenosList] = useState<Relleno[]>(rellenos);
+    // Estado local para la lista de toppings
+    const [toppingsList, setToppingsList] = useState<Topping[]>(toppings);
     const [modalOpen, setModalOpen] = useState(false);
-    const [selectedRellenoId, setSelectedRellenoId] = useState<string | null>(null);
+    const [selectedToppingId, setSelectedToppingId] = useState<string | null>(null);
 
     // 🧱 Abrir modal
     const handleDeleteClick = (id: string) => {
-        setSelectedRellenoId(id);
+        setSelectedToppingId(id);
         setModalOpen(true);
     };
 
     // 🧱 Confirmar eliminación
     const handleConfirmDelete = async () => {
-        if (!selectedRellenoId) return;
+        if (!selectedToppingId) return;
 
         try {
-            const res = await fetch(`/api/relleno?id=${selectedRellenoId}`, {
+            const res = await fetch(`/api/toppings?id=${selectedToppingId}`, {
                 method: "DELETE",
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Error al eliminar relleno");
+            if (!res.ok) throw new Error(data.error || "Error al eliminar topping");
 
-            showAlert("✅ Relleno eliminado correctamente", "success");
+            showAlert("✅ Topping eliminado correctamente", "success");
 
             // ✅ Actualizar lista local (sin volver a hacer fetch)
-            setRellenosList((prev) => prev.filter((r) => r.id !== selectedRellenoId));
+            setToppingsList((prev) => prev.filter((t) => t.id !== selectedToppingId));
         } catch (error) {
-            console.error("❌ Error al eliminar relleno:", error);
-            showAlert("❌ No se pudo eliminar el relleno", "error");
+            console.error("❌ Error al eliminar topping:", error);
+            showAlert("❌ No se pudo eliminar el topping", "error");
         } finally {
             setModalOpen(false);
-            setSelectedRellenoId(null);
+            setSelectedToppingId(null);
         }
     };
 
-    if (rellenosList.length === 0) {
+    if (toppingsList.length === 0) {
         return (
             <p className="text-center text-gray-600 mt-6">
-                No hay rellenos registrados.
+                No hay toppings registrados.
             </p>
         );
     }
@@ -74,26 +74,26 @@ export default function RellenoTable({ rellenos }: RellenoTableProps) {
                             </tr>
                         </thead>
                         <tbody>
-                            {rellenosList.map((relleno) => (
+                            {toppingsList.map((topping) => (
                                 <tr
-                                    key={relleno.id}
+                                    key={topping.id}
                                     className="bg-[#A26B6B] text-white border border-[#ffff] transition-colors"
                                 >
                                     <td className="px-4 py-2 border border-[#8B3A3A] font-medium">
-                                        {relleno.nombre}
+                                        {topping.nombre}
                                     </td>
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
-                                        {relleno.descripcion || "-"}
+                                        {topping.descripcion || "-"}
                                     </td>
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
                                         <div className="flex justify-center gap-3">
-                                            <Link href={`/admin/rellenos/${relleno.id}`}>
+                                            <Link href={`/admin/toppings/${topping.id}`}>
                                                 <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition">
                                                     Editar
                                                 </button>
                                             </Link>
                                             <button
-                                                onClick={() => handleDeleteClick(relleno.id)}
+                                                onClick={() => handleDeleteClick(topping.id)}
                                                 className="bg-[#530708] hover:bg-[#3D0506] text-white font-semibold px-3 py-1 rounded transition"
                                             >
                                                 Eliminar
@@ -110,8 +110,8 @@ export default function RellenoTable({ rellenos }: RellenoTableProps) {
             {/* 🧩 Modal de confirmación */}
             <ConfirmModal
                 isOpen={modalOpen}
-                title="Eliminar relleno"
-                message="¿Estás seguro de eliminar este relleno? Esta acción no se puede deshacer."
+                title="Eliminar topping"
+                message="¿Estás seguro de eliminar este topping? Esta acción no se puede deshacer."
                 confirmText="Eliminar"
                 cancelText="Cancelar"
                 onConfirm={handleConfirmDelete}
