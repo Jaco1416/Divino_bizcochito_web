@@ -6,6 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from "next/navigation";
 import ProtectedRoute from '@/app/components/protectedRoute/ProtectedRoute';
 import AdminOptions from '@/app/components/AdminOptions/AdminOptions';
+import MisPedidos from '@/app/components/MisPedidos/MisPedidos';
+import MisRecetas from '@/app/components/MisRecetas/MisRecetas';
 
 function PerfilPage() {
     const { user, perfil, loading } = useAuth();
@@ -43,7 +45,10 @@ function PerfilPage() {
                             onSelect={handleSelect}
                         />
                     ) : (
-                        <p>Perfil de usuario</p>
+                        <>
+                            <MisPedidos />
+                            <MisRecetas />
+                        </>
                     )}
                 </div>
             </ProtectedRoute>

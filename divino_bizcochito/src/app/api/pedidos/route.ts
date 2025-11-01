@@ -5,7 +5,16 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from("Pedido")
-      .select("id, estado, total, fechaCreacion, fechaEntrega")
+      .select(`
+        id,
+        tipoEntrega,
+        datosEnvio,
+        estado,
+        fechaCreacion,
+        fechaEntrega,
+        total,
+        perfil:fk_pedido_perfiles ( nombre )
+      `)
       .order("fechaCreacion", { ascending: false });
 
     if (error) throw error;

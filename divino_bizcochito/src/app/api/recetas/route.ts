@@ -23,7 +23,6 @@ export async function GET () {
       .order('creado_en', { ascending: false })
 
     if (error) throw error
-
     const recetas = data.map((r: any) => ({
       ...r,
       autor: r.perfil?.nombre || 'Sin autor'

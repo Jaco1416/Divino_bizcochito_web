@@ -9,6 +9,7 @@ import ProductCard from "@/app/components/ProductCard/ProductCard";
 import { useAlert } from "@/app/hooks/useAlert";
 import ConfirmModal from "./components/ui/ConfirmModal";
 import AcercaDe from "./components/AcercaDe/AcercaDe";
+import RecetasCard from "./components/RecetasCard/RecetasCard";
 
 
 interface Producto {
@@ -26,14 +27,34 @@ interface Categoria {
   descripcion: string;
 }
 
+interface Receta {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  categoria: string;
+  imagenUrl: string;
+  autorId: string;
+  autor?: string;
+}
+
 export default function Home() {
   const router = useRouter();
   const { showAlert } = useAlert();
+  const { user, perfil } = useAuth();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Array<Producto>>([]);
+  const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingRecetas, setLoadingRecetas] = useState<boolean>(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProductId, setDeleteProductId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (perfil) {
+      setIsAdmin(perfil.rol === 'admin');
+    }
+  }, [perfil]);
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -67,8 +88,35 @@ export default function Home() {
       setCategorias(dataCategorias);
     };
 
+    const fetchRecetas = async () => {
+      try {
+        setLoadingRecetas(true);
+        const response = await fetch("/api/recetas");
+        
+        if (!response.ok) throw new Error("Error al cargar recetas");
+        
+        const data = await response.json();
+        
+        // Filtrar solo recetas publicadas
+        const recetasPublicadas = Array.isArray(data) 
+          ? data.filter((receta: any) => receta.estado === "publicada")
+          : [];
+        
+        // Limitar a 4 recetas publicadas más recientes
+        const top4Recetas = recetasPublicadas.slice(0, 4);
+        
+        setRecetas(top4Recetas);
+      } catch (err) {
+        console.error("❌ Error al traer recetas:", err);
+        setRecetas([]);
+      } finally {
+        setLoadingRecetas(false);
+      }
+    };
+
     fetchProductosCategoria();
     fetchProductos();
+    fetchRecetas();
   }, []);
 
   const handleEdit = (id: string) => {
@@ -76,7 +124,10 @@ export default function Home() {
   };
   const handleViewProduct = (id: string) => {
     router.push(`/views/producto/${id}`);
+  };
 
+  const handleViewReceta = (id: string) => {
+    router.push(`/views/recetas/detalle/${id}`);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -130,7 +181,7 @@ export default function Home() {
           <ProductCard
             key={producto.id}
             nombre={producto.nombre}
-            categoriaId={categorias.map(cat => cat.id === producto.categoriaId ? cat.nombre : '').find(name => name !== undefined) || 'Sin categoría'}
+            categoriaId={categorias.find(cat => cat.id === producto.categoriaId)?.nombre || 'Sin categoría'}
             precio={producto.precio}
             descripcion={producto.descripcion}
             imagen={producto.imagen}
@@ -144,7 +195,41 @@ export default function Home() {
         <AcercaDe />
       </div>
       <div>
-        <h1 className="text-4xl font-bold text-[#C72C2F] text-center mt-8 mb-8"> Recetas populares</h1>
+        <h1 className="text-4xl font-bold text-[#C72C2F] text-center mt-8 mb-8">
+          Recetas populares
+        </h1>
+        {loadingRecetas ? (
+          <p className="text-center">Cargando recetas...</p>
+        ) : (
+          <div className="grid 
+            grid-cols-1 
+            sm:grid-cols-2 
+            md:grid-cols-2 
+            lg:grid-cols-4 
+            gap-8 
+            justify-center 
+            place-items-center 
+            max-w-7xl 
+            mx-auto
+            px-4
+            mb-8">
+            {recetas.map((receta) => (
+              <RecetasCard
+                key={receta.id}
+                id={receta.id}
+                titulo={receta.titulo}
+                categoria={receta.categoria}
+                autorId={receta.autorId}
+                autor={receta.autor}
+                descripcion={receta.descripcion}
+                imagen={receta.imagenUrl}
+                onView={() => handleViewReceta(receta.id)}
+                isAdmin={isAdmin}
+                isOwner={receta.autorId === perfil?.id}
+              />
+            ))}
+          </div>
+        )}
       </div>
       <ConfirmModal
         isOpen={modalOpen}
