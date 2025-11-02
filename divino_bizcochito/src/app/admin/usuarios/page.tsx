@@ -12,7 +12,7 @@ interface Perfil {
   imagen?: string;
 }
 
-function UsuariosPage() {
+function usuariosPage() {
   const [usuarios, setUsuarios] = useState<Perfil[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,4 +60,4 @@ function UsuariosPage() {
   )
 }
 
-export default UsuariosPage
+export default usuariosPage

@@ -22,9 +22,9 @@ interface Producto {
     categoriaId: number;
 }
 
-export default function DetalleProducto({ params }: { params: Promise<{ id: string }> }) {
+export default function DetalleProducto({ params }: { params: { id: string } }) {
 
-    const { id } = use(params);
+    const { id } = params;
 
 
     const [producto, setProducto] = useState<Producto | null>(null);
