@@ -4,7 +4,7 @@ import React from 'react'
 import PerfilCard from '@/app/components/PerfilCard/PerfilCard';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from "next/navigation";
-import ProtectedRoute from '@/app/components/protectedRoute/ProtectedRoute';
+import ProtectedRoute from '@/app/components/ProtectedRoute/ProtectedRoute';
 import AdminOptions from '@/app/components/AdminOptions/AdminOptions';
 import MisPedidos from '@/app/components/MisPedidos/MisPedidos';
 import MisRecetas from '@/app/components/MisRecetas/MisRecetas';

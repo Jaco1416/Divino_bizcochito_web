@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
+import ProtectedRoute from "@/app/components/ProtectedRoute/ProtectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 
 interface Producto {
