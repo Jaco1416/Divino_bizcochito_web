@@ -2,7 +2,7 @@
 import React from 'react'
 import { useEffect, useState } from "react";
 import RellenoTable from "@/app/components/RellenosTable/RellenosTable";
-import ProtectedRoute from '@/app/components/protectedRoute/ProtectedRoute';
+import ProtectedRoute from '@/app/components/ProtectedRoute/ProtectedRoute';
 import BackButton from '@/app/components/BackButton/BackButton';
 import Link from 'next/link';
 
