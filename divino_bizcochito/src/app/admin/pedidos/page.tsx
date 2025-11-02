@@ -1,5 +1,5 @@
 import React from 'react'
-import ProtectedRoute from '@/app/components/ProtectedRoute/ProtectedRoute';
+import ProtectedRoute from '@/app/components/protectedRoute/ProtectedRoute';
 import BackButton from '@/app/components/BackButton/BackButton';
 import PedidosTable from '@/app/components/PedidosTable/PedidosTable';
 
