@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import ProtectedRoute from "@/app/components/protectedRoute/ProtectedRoute";
+import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 import ConfirmModal from "../ui/ConfirmModal";
 
