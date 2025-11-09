@@ -6,8 +6,14 @@ import BackButton from "@/app/components/BackButton/BackButton";
 import CategoriasTable from "@/app/components/CategoriasTable/CategoriasTable";
 import Link from "next/link";
 
+interface Categoria {
+  id: string;
+  nombre: string;
+  descripcion: string;
+}
+
 export default function CategoriasPage() {
-  const [categorias, setCategorias] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 🔁 Cargar categorías al montar el componente

@@ -15,6 +15,24 @@ interface Producto {
     rellenoId: string;
 }
 
+interface Categoria {
+    id: number;
+    nombre: string;
+    descripcion: string;
+}
+
+interface Topping {
+    id: number;
+    nombre: string;
+    descripcion: string;
+}
+
+interface Relleno {
+    id: number;
+    nombre: string;
+    descripcion: string;
+}
+
 export default function CrearProductoPage() {
     const router = useRouter();
 
@@ -28,9 +46,9 @@ export default function CrearProductoPage() {
         rellenoId: "",
     });
 
-    const [categorias, setCategorias] = useState<any[]>([]);
-    const [toppings, setToppings] = useState<any[]>([]);
-    const [rellenos, setRellenos] = useState<any[]>([]);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [toppings, setToppings] = useState<Topping[]>([]);
+    const [rellenos, setRellenos] = useState<Relleno[]>([]);
     const [preview, setPreview] = useState<string>("");
     const [saving, setSaving] = useState(false);
 
@@ -246,7 +264,7 @@ export default function CrearProductoPage() {
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                                 >
                                     <option value="">Seleccionar topping</option>
-                                    {toppings.map((t: any) => (
+                                    {toppings.map((t: Topping) => (
                                         <option key={t.id} value={t.id}>
                                             {t.nombre}
                                         </option>
@@ -267,7 +285,7 @@ export default function CrearProductoPage() {
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                                 >
                                     <option value="">Seleccionar relleno</option>
-                                    {rellenos.map((r: any) => (
+                                    {rellenos.map((r: Relleno) => (
                                         <option key={r.id} value={r.id}>
                                             {r.nombre}
                                         </option>
@@ -288,7 +306,7 @@ export default function CrearProductoPage() {
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                                 >
                                     <option value="">Seleccionar categoría</option>
-                                    {categorias.map((c: any) => (
+                                    {categorias.map((c: Categoria) => (
                                         <option key={c.id} value={c.id}>
                                             {c.nombre}
                                         </option>

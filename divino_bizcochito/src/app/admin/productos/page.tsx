@@ -6,8 +6,21 @@ import BackButton from "@/app/components/BackButton/BackButton";
 import ProductTable from "@/app/components/ProductsTable/ProductsTable";
 import Link from "next/link";
 
+interface Producto {
+    id: string;
+    nombre: string;
+    descripcion: string;
+    precio: number;
+    disponible: boolean;
+    imagen: string;
+    categoriaId: string;
+    toppingId: string;
+    rellenoId: string;
+}
+
+
 export default function ProductosPage() {
-  const [productos, setProductos] = useState<any[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 🔁 Cargar productos al montar el componente

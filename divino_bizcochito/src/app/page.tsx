@@ -31,6 +31,7 @@ interface Receta {
   id: string;
   titulo: string;
   descripcion: string;
+  estado: string;
   categoria: string;
   imagenUrl: string;
   autorId: string;
@@ -99,7 +100,7 @@ export default function Home() {
         
         // Filtrar solo recetas publicadas
         const recetasPublicadas = Array.isArray(data) 
-          ? data.filter((receta: any) => receta.estado === "publicada")
+          ? data.filter((receta: Receta) => receta.estado === "publicada")
           : [];
         
         // Limitar a 4 recetas publicadas más recientes

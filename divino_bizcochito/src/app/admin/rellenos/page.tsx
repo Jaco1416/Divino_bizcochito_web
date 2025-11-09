@@ -6,9 +6,15 @@ import ProtectedRoute from '@/app/components/protectedRoute/protectedRoute';
 import BackButton from '@/app/components/BackButton/BackButton';
 import Link from 'next/link';
 
+interface Relleno {
+  id: string;
+  nombre: string;
+  descripcion: string;
+}
+
 export default function RellenosPage() {
 
-   const [rellenos, setRellenos] = useState<any[]>([]);
+   const [rellenos, setRellenos] = useState<Relleno[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

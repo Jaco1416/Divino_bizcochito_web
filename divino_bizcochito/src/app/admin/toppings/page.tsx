@@ -6,8 +6,14 @@ import BackButton from "@/app/components/BackButton/BackButton";
 import ToppingsTable from "@/app/components/ToppingsTable/ToppingsTable";
 import Link from "next/link";
 
+interface Topping {
+  id: string;
+  nombre: string;
+  descripcion: string;
+}
+
 export default function ToppingsPage() {
-  const [toppings, setToppings] = useState<any[]>([]);
+  const [toppings, setToppings] = useState<Topping[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 🔁 Cargar toppings al montar el componente
