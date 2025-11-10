@@ -11,7 +11,6 @@ import ConfirmModal from "./components/ui/ConfirmModal";
 import AcercaDe from "./components/AcercaDe/AcercaDe";
 import RecetasCard from "./components/RecetasCard/RecetasCard";
 
-
 interface Producto {
   id: string;
   nombre: string;
@@ -52,7 +51,7 @@ export default function Home() {
 
   useEffect(() => {
     if (perfil) {
-      setIsAdmin(perfil.rol === 'admin');
+      setIsAdmin(perfil.rol === "admin");
     }
   }, [perfil]);
 
@@ -81,9 +80,9 @@ export default function Home() {
         setLoading(false);
       }
     };
+
     const fetchProductosCategoria = async () => {
       const responseCategorias = await fetch("/api/categorias");
-
       const dataCategorias = await responseCategorias.json();
       setCategorias(dataCategorias);
     };
@@ -92,19 +91,19 @@ export default function Home() {
       try {
         setLoadingRecetas(true);
         const response = await fetch("/api/recetas");
-        
+
         if (!response.ok) throw new Error("Error al cargar recetas");
-        
+
         const data = await response.json();
-        
+
         // Filtrar solo recetas publicadas
-        const recetasPublicadas = Array.isArray(data) 
+        const recetasPublicadas = Array.isArray(data)
           ? data.filter((receta: any) => receta.estado === "publicada")
           : [];
-        
+
         // Limitar a 4 recetas publicadas más recientes
         const top4Recetas = recetasPublicadas.slice(0, 4);
-        
+
         setRecetas(top4Recetas);
       } catch (err) {
         console.error("❌ Error al traer recetas:", err);
@@ -122,6 +121,7 @@ export default function Home() {
   const handleEdit = (id: string) => {
     router.push(`/admin/productos/${id}`);
   };
+
   const handleViewProduct = (id: string) => {
     router.push(`/views/producto/${id}`);
   };
@@ -135,6 +135,7 @@ export default function Home() {
     setModalOpen(true);
   };
 
+  // 🧩 Función actualizada con manejo de FK y errores específicos
   const handleConfirmDelete = async () => {
     if (!selectedProductId) return;
 
@@ -144,11 +145,25 @@ export default function Home() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al eliminar producto");
+
+      if (!res.ok) {
+        if (data.error?.includes("foreign key constraint")) {
+          showAlert(
+            "❌ No se puede eliminar este producto porque está asociado a un pedido.",
+            "error"
+          );
+        } else {
+          throw new Error(data.error || "Error al eliminar producto");
+        }
+        return;
+      }
 
       showAlert("✅ Producto eliminado correctamente", "success");
 
-      setProductos((prev) => prev.filter((p) => p.id !== selectedProductId));
+      // Actualiza la lista local
+      setProductos((prev) =>
+        prev.filter((p) => p.id !== selectedProductId)
+      );
     } catch (error) {
       console.error("❌ Error al eliminar producto:", error);
       showAlert("❌ No se pudo eliminar el producto", "error");
@@ -166,22 +181,27 @@ export default function Home() {
       <h1 className="text-4xl font-bold text-[#C72C2F] text-center mt-8 mb-8">
         Productos destacados
       </h1>
-      <div className="grid 
-    grid-cols-1 
-    sm:grid-cols-2 
-    md:grid-cols-2 
-    lg:grid-cols-4 
-    gap-8 
-    justify-center 
-    place-items-center 
-    max-w-7xl 
-    mx-auto
-    px-4">
+      <div
+        className="grid 
+          grid-cols-1 
+          sm:grid-cols-2 
+          md:grid-cols-2 
+          lg:grid-cols-4 
+          gap-8 
+          justify-center 
+          place-items-center 
+          max-w-7xl 
+          mx-auto
+          px-4"
+      >
         {productos.map((producto) => (
           <ProductCard
             key={producto.id}
             nombre={producto.nombre}
-            categoriaId={categorias.find(cat => cat.id === producto.categoriaId)?.nombre || 'Sin categoría'}
+            categoriaId={
+              categorias.find((cat) => cat.id === producto.categoriaId)
+                ?.nombre || "Sin categoría"
+            }
             precio={producto.precio}
             descripcion={producto.descripcion}
             imagen={producto.imagen}
@@ -201,18 +221,20 @@ export default function Home() {
         {loadingRecetas ? (
           <p className="text-center">Cargando recetas...</p>
         ) : (
-          <div className="grid 
-            grid-cols-1 
-            sm:grid-cols-2 
-            md:grid-cols-2 
-            lg:grid-cols-4 
-            gap-8 
-            justify-center 
-            place-items-center 
-            max-w-7xl 
-            mx-auto
-            px-4
-            mb-8">
+          <div
+            className="grid 
+              grid-cols-1 
+              sm:grid-cols-2 
+              md:grid-cols-2 
+              lg:grid-cols-4 
+              gap-8 
+              justify-center 
+              place-items-center 
+              max-w-7xl 
+              mx-auto
+              px-4
+              mb-8"
+          >
             {recetas.map((receta) => (
               <RecetasCard
                 key={receta.id}

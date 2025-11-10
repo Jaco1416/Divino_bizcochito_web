@@ -1,6 +1,7 @@
 "use client";
 
 import { FaPen, FaTrashAlt } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext"; // 👈 usamos el contexto
 
 interface ProductCardProps {
   nombre: string;
@@ -23,6 +24,10 @@ export default function ProductCard({
   onDelete,
   onViewRecipe,
 }: ProductCardProps) {
+  // 🔐 Obtenemos el rol directamente desde el contexto global
+  const { perfil } = useAuth();
+  const isAdmin = perfil?.rol === "admin";
+
   return (
     <div
       className="
@@ -73,21 +78,26 @@ export default function ProductCard({
 
         {/* Botones */}
         <div className="flex items-center justify-between mt-4 pt-2 border-t border-[#e0d3c0]">
+          {/* 👇 Solo visible si el usuario es admin */}
           <div className="flex gap-2">
-            <button
-              onClick={onEdit}
-              className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
-              title="Editar"
-            >
-              <FaPen size={14} />
-            </button>
-            <button
-              onClick={onDelete}
-              className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
-              title="Eliminar"
-            >
-              <FaTrashAlt size={14} />
-            </button>
+            {isAdmin && (
+              <>
+                <button
+                  onClick={onEdit}
+                  className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                  title="Editar"
+                >
+                  <FaPen size={14} />
+                </button>
+                <button
+                  onClick={onDelete}
+                  className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                  title="Eliminar"
+                >
+                  <FaTrashAlt size={14} />
+                </button>
+              </>
+            )}
           </div>
 
           <button
