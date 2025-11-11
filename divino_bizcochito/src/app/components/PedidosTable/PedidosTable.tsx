@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
 
 interface Pedido {
     id: number;
@@ -25,23 +24,13 @@ export default function PedidosTable() {
     useEffect(() => {
         const fetchPedidos = async () => {
             try {
-                const { data, error } = await supabase
-            .from("Pedido")
-            .select(`
-                id,
-                tipoEntrega,
-                datosEnvio,
-                estado,
-                fechaCreacion,
-                fechaEntrega,
-                total,
-                perfil:fk_pedido_perfiles ( nombre )
-            `)
-            .order("fechaCreacion", { ascending: false });
-
-                if (error) throw error;
-                // 👇 ahora TypeScript acepta correctamente el tipo
-                setPedidos((data as unknown as Pedido[]) ?? []);
+                // Llamada al endpoint interno que devuelve { data: Pedido[], meta: { ... } }
+                const res = await fetch('/api/pedidos')
+                if (!res.ok) throw new Error(`Error al obtener pedidos: ${res.status} ${res.statusText}`)
+                const json = await res.json()
+                // Manejar dos posibles formatos: { data: [...] } o directamente [...]
+                const items = Array.isArray(json) ? json : (json?.data ?? [])
+                setPedidos((items as unknown as Pedido[]) ?? [])
             } catch (err: any) {
                 setError(err.message);
             } finally {

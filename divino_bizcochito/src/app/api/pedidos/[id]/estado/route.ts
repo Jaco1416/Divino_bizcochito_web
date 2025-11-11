@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { sendEstadoEmail } from '@/lib/sendEmail'
+import { sendPushToPerfil } from '@/lib/sendPush'
 
 export async function PUT (
   req: Request,
@@ -125,6 +126,21 @@ export async function PUT (
       }
     } catch (mailError: any) {
       console.error('⚠️ Error al enviar correo:', mailError.message)
+    }
+
+    // 🔹 6.5 Enviar notificación push (si existe token)
+    try {
+      if (pedido?.perfilId) {
+        const pushRes = await sendPushToPerfil(
+          String(pedido.perfilId),
+          `Estado pedido: ${siguienteEstado}`,
+          `Tu pedido #${id} cambió a: ${siguienteEstado}`,
+          { pedidoId: Number(id), estado: siguienteEstado }
+        )
+        console.log('📲 Push result:', pushRes)
+      }
+    } catch (pushErr: any) {
+      console.error('⚠️ Error enviando push:', pushErr?.message ?? pushErr)
     }
 
     // 🔹 7. Responder al cliente

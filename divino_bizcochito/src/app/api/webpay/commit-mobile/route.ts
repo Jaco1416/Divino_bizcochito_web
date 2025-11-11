@@ -75,6 +75,30 @@ export async function GET(req: Request) {
         throw new Error("El carrito no contiene productos válidos.");
       }
 
+      // 2.1️⃣ Evitar duplicar pedidos si el carrito ya fue procesado
+      const { data: pedidoExistente } = await supabase
+        .from("Pedido")
+        .select("id")
+        .eq("carritoId", carrito.id)
+        .order("createdAt", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (pedidoExistente) {
+        console.warn(
+          "⚠️ Carrito ya tenía un pedido asociado, devolviendo respuesta existente.",
+          pedidoExistente.id
+        );
+
+        return NextResponse.json({
+          success: true,
+          status: "AUTHORIZED",
+          message: "El carrito ya fue procesado previamente.",
+          result,
+          pedidoId: pedidoExistente.id,
+        });
+      }
+
       // 3️⃣ Crear pedido
       const { data: pedido, error: errPedido } = await supabase
         .from("Pedido")
