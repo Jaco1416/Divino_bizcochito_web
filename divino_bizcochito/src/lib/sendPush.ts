@@ -39,41 +39,28 @@ async function sendExpoPush(token: string, title: string, body: string, data?: a
 }
 
 export async function getTokensForPerfil(perfilId: string) {
-  const tokens: string[] = []
-
-  if (!perfilId) return tokens
+  if (!perfilId) return []
 
   try {
-    // Intentar leer columna en Perfiles (si existe expo_push_token)
-    const { data: perfil, error: perfilErr } = await supabaseAdmin
-      .from('Perfiles')
-      .select('expo_push_token')
-      .eq('id', perfilId)
-      .single()
-
-    if (!perfilErr && perfil?.expo_push_token) {
-      tokens.push(perfil.expo_push_token)
-    }
-  } catch (e) {
-    // ignorar: la columna puede no existir
-  }
-
-  try {
-    // Buscar en tabla PushTokens si existe (varios tokens por perfil)
-    const { data: rows, error: rowsErr } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('PushTokens')
       .select('token')
-      .eq('perfilId', perfilId)
+      .eq('perfil_id', perfilId)
 
-    if (!rowsErr && Array.isArray(rows)) {
-      for (const r of rows) if (r?.token) tokens.push(r.token)
+    if (error) {
+      console.warn('⚠️ No se pudieron obtener tokens para perfil:', error.message)
+      return []
     }
-  } catch (e) {
-    // ignorar
-  }
 
-  // dedupe
-  return Array.from(new Set(tokens))
+    const tokens = (data ?? [])
+      .map((row) => row?.token)
+      .filter((token): token is string => Boolean(token))
+
+    return Array.from(new Set(tokens))
+  } catch (err: any) {
+    console.error('⚠️ Error consultando tokens de push:', err?.message ?? err)
+    return []
+  }
 }
 
 export async function sendPushToPerfil(perfilId: string, title: string, body: string, data?: any) {
