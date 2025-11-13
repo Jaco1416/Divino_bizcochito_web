@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import DetalleProductoCard from "@/app/components/ProductDetail/ProductDetail";
 
 interface Categoria {
