@@ -31,6 +31,7 @@ async function sendExpoPush(token: string, title: string, body: string, data?: a
     }
 
     const json = await res.json()
+    console.log('✅ Expo push sent:', json)
     return { ok: true, json }
   } catch (err) {
     console.error('⚠️ Error sending expo push:', err)

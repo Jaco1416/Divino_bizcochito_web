@@ -45,14 +45,14 @@ export async function PUT (
 
     // 🔹 2.5 Obtener el nombre desde la tabla Perfil
     const { data: perfil, error: perfilError } = await supabaseAdmin
-      .from('Perfil')
+      .from('Perfiles')
       .select('nombre')
       .eq('id', pedido.perfilId)
       .single()
 
     if (perfilError) {
       console.warn(
-        '⚠️ No se pudo obtener el nombre desde Perfil:',
+        '⚠️ No se pudo obtener el nombre desde Perfiles:',
         perfilError.message
       )
     }

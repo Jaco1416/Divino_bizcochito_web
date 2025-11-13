@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function POST(req: Request) {
+  console.log({ hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY })
   try {
     const body = await req.json()
     const { perfilId, userId, token } = body
@@ -16,11 +17,9 @@ export async function POST(req: Request) {
       payload.perfil_id = perfil_id
     }
 
-    const query = supabaseAdmin.from('PushTokens')
-    const rows = [payload]
-    const { error } = perfil_id
-      ? await query.upsert(rows, { onConflict: 'perfil_id' })
-      : await query.insert(rows)
+    const { error } = await supabaseAdmin
+      .from('PushTokens')
+      .upsert([payload], { onConflict: 'token' })
 
     if (error) {
       console.error('❌ Error guardando token de push:', error.message)
