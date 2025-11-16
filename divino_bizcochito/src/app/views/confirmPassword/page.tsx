@@ -1,12 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAlert } from "@/app/hooks/useAlert";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ConfirmPasswordView() {
+function ConfirmPasswordContent() {
   const { showAlert } = useAlert();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get("token");
   const type = searchParams.get("type");
 
@@ -55,6 +56,7 @@ export default function ConfirmPasswordView() {
 
     if (error) {
       showAlert("❌ No pudimos actualizar la contraseña.", "error");
+      router.push("/views/login");
     } else {
       showAlert("✅ Contraseña actualizada correctamente.", "success");
     }
@@ -105,5 +107,21 @@ export default function ConfirmPasswordView() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ConfirmPasswordView() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-[#f8f1ed] px-4">
+          <div className="bg-[#C72C2F] p-10 rounded-2xl shadow-xl w-full max-w-[420px] text-white text-center">
+            Cargando...
+          </div>
+        </div>
+      }
+    >
+      <ConfirmPasswordContent />
+    </Suspense>
   );
 }
