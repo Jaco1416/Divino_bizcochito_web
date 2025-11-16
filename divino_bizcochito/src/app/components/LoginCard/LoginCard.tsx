@@ -65,7 +65,7 @@ function LoginCard() {
                     </p>
                     <p className="text-sm text-white/90 -mt-1">
                         ¿Olvidaste tu contraseña?{" "}
-                        <a href="/views/ForgotPassword" className="underline text-orange-950 hover:text-white/90">
+                        <a href="/views/forgotPassword" className="underline text-orange-950 hover:text-white/90">
                             recuperar contraseña.
                         </a>
                     </p>
