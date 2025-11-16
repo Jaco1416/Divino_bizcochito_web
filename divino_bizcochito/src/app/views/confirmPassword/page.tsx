@@ -1,11 +1,13 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useAlert } from "@/app/hooks/useAlert";
 import { useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 function ConfirmPasswordContent() {
   const { showAlert } = useAlert();
+  const { handlePasswordReset } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -50,12 +52,17 @@ function ConfirmPasswordContent() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.updateUser({ password });
+    const { success, errorMessage } = await handlePasswordReset(password);
 
     setLoading(false);
 
-    if (error) {
-      showAlert("❌ No pudimos actualizar la contraseña.", "error");
+    if (!success) {
+      showAlert(
+        errorMessage
+          ? `❌ ${errorMessage}`
+          : "❌ No pudimos actualizar la contraseña.",
+        "error"
+      );
       router.push("/views/login");
     } else {
       showAlert("✅ Contraseña actualizada correctamente.", "success");

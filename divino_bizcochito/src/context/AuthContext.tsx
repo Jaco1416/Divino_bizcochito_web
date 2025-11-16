@@ -12,11 +12,17 @@ interface Perfil {
   telefono: string;
 }
 
+interface PasswordResetResult {
+  success: boolean;
+  errorMessage?: string;
+}
+
 interface AuthContextType {
   user: any | null;
   perfil: Perfil | null;
   loading: boolean;
   handleLogout: () => Promise<void>;
+  handlePasswordReset: (password: string) => Promise<PasswordResetResult>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   perfil: null,
   loading: true,
   handleLogout: async () => {},
+  handlePasswordReset: async () => ({ success: false }),
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -100,8 +107,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push("/views/login");
   };
 
+  const handlePasswordReset = async (
+    newPassword: string
+  ): Promise<PasswordResetResult> => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      console.error("❌ Error al actualizar contraseña:", error);
+      return { success: false, errorMessage: error.message };
+    }
+
+    return { success: true };
+  };
+
   return (
-    <AuthContext.Provider value={{ user, perfil, loading, handleLogout }}>
+    <AuthContext.Provider
+      value={{ user, perfil, loading, handleLogout, handlePasswordReset }}
+    >
       {children}
     </AuthContext.Provider>
   );
