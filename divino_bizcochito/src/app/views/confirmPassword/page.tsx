@@ -1,26 +1,56 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAlert } from "@/app/hooks/useAlert";
+import { useSearchParams } from "next/navigation";
 
 export default function ConfirmPasswordView() {
   const { showAlert } = useAlert();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const type = searchParams.get("type");
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 1️⃣ Activar la sesión con el token de recuperación
+  useEffect(() => {
+    async function handleRecoverySession() {
+      if (!token || type !== "recovery") return;
+
+      const { error } = await supabase.auth.setSession({
+        access_token: token,
+        refresh_token: token,
+      });
+
+      if (error) {
+        console.error(error);
+        showAlert("No pudimos validar tu enlace de recuperación.", "error");
+      }
+    }
+
+    handleRecoverySession();
+  }, [token, type, showAlert]);
+
+  // 2️⃣ Actualizar contraseña
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (password.length < 8) {
       showAlert("La contraseña debe tener al menos 8 caracteres.", "warning");
       return;
     }
+
     if (password !== confirmPassword) {
       showAlert("Las contraseñas no coinciden.", "warning");
       return;
     }
+
     setLoading(true);
+
     const { error } = await supabase.auth.updateUser({ password });
+
     setLoading(false);
 
     if (error) {
@@ -39,6 +69,7 @@ export default function ConfirmPasswordView() {
         <p className="text-sm text-center opacity-90 mb-6">
           Ingresa una nueva contraseña para tu cuenta.
         </p>
+
         <form onSubmit={handleReset} className="flex flex-col gap-5">
           <div>
             <label className="block text-sm mb-1">Nueva contraseña</label>
@@ -51,6 +82,7 @@ export default function ConfirmPasswordView() {
               className="w-full px-3 py-2 rounded-md bg-white text-gray-800 placeholder:text-gray-400 border border-white/50 focus:outline-none focus:ring-2 focus:ring-white/70"
             />
           </div>
+
           <div>
             <label className="block text-sm mb-1">Confirmar contraseña</label>
             <input
@@ -62,6 +94,7 @@ export default function ConfirmPasswordView() {
               className="w-full px-3 py-2 rounded-md bg-white text-gray-800 placeholder:text-gray-400 border border-white/50 focus:outline-none focus:ring-2 focus:ring-white/70"
             />
           </div>
+
           <button
             type="submit"
             disabled={loading}
