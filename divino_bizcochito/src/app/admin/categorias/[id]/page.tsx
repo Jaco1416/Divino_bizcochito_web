@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Categoria {
   id?: string;
@@ -14,6 +15,7 @@ interface Categoria {
 export default function EditarCategoriaPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [categoria, setCategoria] = useState<Categoria>({
     nombre: "",
@@ -34,7 +36,7 @@ export default function EditarCategoriaPage() {
         setCategoria(data);
       } catch (error) {
         console.error("❌ Error al cargar categoría:", error);
-        alert("No se pudo cargar la categoría");
+        showAlert("No se pudo cargar la categoría", "error");
       } finally {
         setLoading(false);
       }
@@ -66,11 +68,11 @@ export default function EditarCategoriaPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al actualizar categoría");
 
-      alert("✅ Categoría actualizada correctamente");
+      showAlert("✅ Categoría actualizada correctamente", "success");
       router.push("/admin/categorias");
     } catch (error) {
       console.error("❌ Error al actualizar categoría:", error);
-      alert("❌ No se pudo actualizar la categoría");
+      showAlert("❌ No se pudo actualizar la categoría", "error");
     } finally {
       setSaving(false);
     }

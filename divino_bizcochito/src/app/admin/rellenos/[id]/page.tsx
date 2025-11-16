@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Relleno {
   id?: string;
@@ -14,6 +15,7 @@ interface Relleno {
 export default function EditarRellenoPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [relleno, setRelleno] = useState<Relleno>({
     nombre: "",
@@ -34,7 +36,7 @@ export default function EditarRellenoPage() {
         setRelleno(data); // ✅ asumimos que viene un array con un solo elemento
       } catch (error) {
         console.error("❌ Error al cargar relleno:", error);
-        alert("No se pudo cargar el relleno");
+        showAlert("No se pudo cargar el relleno", "error");
       } finally {
         setLoading(false);
       }
@@ -66,11 +68,11 @@ export default function EditarRellenoPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al actualizar relleno");
 
-      alert("✅ Relleno actualizado correctamente");
+      showAlert("✅ Relleno actualizado correctamente", "success");
       router.push("/admin/rellenos");
     } catch (error) {
       console.error("❌ Error al actualizar relleno:", error);
-      alert("❌ No se pudo actualizar el relleno");
+      showAlert("❌ No se pudo actualizar el relleno", "error");
     } finally {
       setSaving(false);
     }

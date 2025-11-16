@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient"; // tu cliente configurado
+import { useAlert } from "@/app/hooks/useAlert";
+
+const formatTelefono = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 4) return digits;
+    return `${digits.slice(0, 4)} ${digits.slice(4)}`.trim();
+};
 
 interface Pedido {
     id: number;
@@ -25,12 +32,14 @@ interface Opcion {
 
 export default function CarritoCheck() {
     const { user } = useAuth();
+    const { showAlert } = useAlert();
     const [carrito, setCarrito] = useState<Pedido[]>([]);
     const [tipoEntrega, setTipoEntrega] = useState<"retiro" | "envio">("retiro");
     const [nombre, setNombre] = useState("");
     const [direccion, setDireccion] = useState("");
     const [correo, setCorreo] = useState("");
     const [comentarios, setComentarios] = useState("");
+    const [telefono, setTelefono] = useState("");
     const [rellenos, setRellenos] = useState<Opcion[]>([]);
     const [toppings, setToppings] = useState<Opcion[]>([]);
 
@@ -77,12 +86,30 @@ export default function CarritoCheck() {
     }, []);
 
     const handlePay = async () => {
+        if (tipoEntrega === "envio") {
+            if (!nombre.trim() || !direccion.trim() || !correo.trim() || !telefono.trim()) {
+                showAlert("Por favor completa nombre, dirección, correo y teléfono para envíos.", "warning");
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(correo.trim())) {
+                showAlert("Ingresa un correo electrónico válido.", "warning");
+                return;
+            }
+
+            if (!/^\d{4}\s\d{4}$/.test(telefono)) {
+                showAlert('El teléfono debe tener el formato "8888 8888".', "warning");
+                return;
+            }
+        }
+
         try {
             console.log("Procesando pago...");
 
             const carritoRaw = localStorage.getItem("carrito");
             if (!carritoRaw) {
-                alert("Error: carrito vacío o inválido.");
+                showAlert("Error: carrito vacío o inválido.", "error");
                 return;
             }
 
@@ -97,6 +124,7 @@ export default function CarritoCheck() {
                     nombre,
                     direccion,
                     correo,
+                    telefono: telefono ? `+56 9 ${telefono}` : "",
                     comentarios,
                 },
                 items: carritoLocal.items || carritoLocal, // Por si tu estructura es distinta
@@ -111,7 +139,7 @@ export default function CarritoCheck() {
 
             if (errCarrito) {
                 console.error("❌ Error guardando carrito:", errCarrito);
-                alert("No se pudo guardar el carrito.");
+                showAlert("No se pudo guardar el carrito.", "error");
                 return;
             }
 
@@ -133,7 +161,7 @@ export default function CarritoCheck() {
 
             if (!data.url || !data.token) {
                 console.error("Error al iniciar Webpay:", data);
-                alert("No se pudo iniciar el pago. Inténtalo más tarde.");
+                showAlert("No se pudo iniciar el pago. Inténtalo más tarde.", "error");
                 return;
             }
 
@@ -151,7 +179,7 @@ export default function CarritoCheck() {
             form.submit();
         } catch (error) {
             console.error("Error procesando el pago:", error);
-            alert("Ocurrió un error al procesar el pago.");
+            showAlert("Ocurrió un error al procesar el pago.", "error");
         }
     };
 
@@ -330,6 +358,23 @@ export default function CarritoCheck() {
                             />
                         </div>
 
+                        <div className="mb-4">
+                            <label className="block font-semibold mb-1">Teléfono</label>
+                            <div className="flex items-center gap-2 w-full">
+                                <span className="px-3 py-2 border rounded-md bg-gray-100 text-gray-700 whitespace-nowrap">
+                                    +56 9
+                                </span>
+                                <input
+                                    type="text"
+                                    value={telefono}
+                                    onChange={(e) => setTelefono(formatTelefono(e.target.value))}
+                                    placeholder="8888 8888"
+                                    className="border rounded-md p-2 w-full"
+                                />
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">Formato requerido: 8888 8888</p>
+                        </div>
+
                         <div>
                             <label className="block font-semibold mb-1">Comentarios</label>
                             <textarea
@@ -360,7 +405,15 @@ export default function CarritoCheck() {
                         </ul>
                     </div>
 
-                    <button onClick={handlePay} className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg mt-6 cursor-pointer">
+                    <button
+                        onClick={handlePay}
+                        disabled={carrito.length === 0}
+                        className={`bg-red-600 text-white font-semibold py-3 rounded-lg mt-6 transition-opacity ${
+                            carrito.length === 0
+                                ? "opacity-50 cursor-default"
+                                : "hover:bg-red-700 cursor-pointer"
+                        }`}
+                    >
                         Ir a pagar
                     </button>
                 </div>

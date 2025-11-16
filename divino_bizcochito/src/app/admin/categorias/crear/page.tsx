@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Categoria {
   nombre: string;
@@ -12,6 +13,7 @@ interface Categoria {
 
 export default function CrearCategoriaPage() {
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [categoria, setCategoria] = useState<Categoria>({
     nombre: "",
@@ -43,11 +45,11 @@ export default function CrearCategoriaPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear categoría");
 
-      alert("✅ Categoría creada correctamente");
+      showAlert("✅ Categoría creada correctamente", "success");
       router.push("/admin/categorias");
     } catch (error) {
       console.error("❌ Error al crear categoría:", error);
-      alert("❌ No se pudo crear la categoría");
+      showAlert("❌ No se pudo crear la categoría", "error");
     } finally {
       setSaving(false);
     }

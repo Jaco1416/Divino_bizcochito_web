@@ -31,6 +31,7 @@ export default function PerfilCard({
             alt={`Foto de perfil de ${nombre}`}
             width={128}
             height={128}
+            unoptimized
             className="object-cover w-full h-full"
           />
         </div>
@@ -58,7 +59,7 @@ export default function PerfilCard({
       <div className="text-center">
         <button
           onClick={onEditar}
-          className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-5 rounded-lg transition-colors"
+          className="bg-[#B21E1E] hover:bg-[#8B1515] text-white font-medium py-2 px-5 rounded-lg transition-colors cursor-pointer"
         >
           Editar perfil
         </button>

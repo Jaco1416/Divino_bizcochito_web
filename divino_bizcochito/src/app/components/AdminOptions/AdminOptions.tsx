@@ -28,7 +28,7 @@ export default function AdminOptions({ onSelect }: AdminOptionsProps) {
           <button
             key={option}
             onClick={() => onSelect?.(option.toLowerCase())}
-            className="bg-[#B21E1E] hover:bg-[#8F1616] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+            className="bg-[#B21E1E] hover:bg-[#8F1616] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
           >
             {option}
           </button>

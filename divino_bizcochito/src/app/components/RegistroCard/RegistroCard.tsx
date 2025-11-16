@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useAlert } from "@/app/hooks/useAlert";
 
 export default function RegistroForm() {
 
     const { showAlert } = useAlert();
+    const router = useRouter();
 
     const [usuario, setUsuario] = useState("");
     const [password, setPassword] = useState("");
@@ -110,8 +112,10 @@ export default function RegistroForm() {
             showAlert("❌ Error al registrar usuario.", "error");
             return;
         }
-
+        
         showAlert("✅ Registro exitoso. Verifica tu correo.", "success");
+        router.push("/views/wait");
+        
     };
 
     return (

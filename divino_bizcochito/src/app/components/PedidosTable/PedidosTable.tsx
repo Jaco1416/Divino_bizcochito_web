@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Pedido {
     id: number;
@@ -16,10 +17,14 @@ interface Pedido {
     } | null;
 }
 
+const PAGE_SIZE = 5;
+
 export default function PedidosTable() {
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const { showAlert } = useAlert();
 
     useEffect(() => {
         const fetchPedidos = async () => {
@@ -41,8 +46,22 @@ export default function PedidosTable() {
         fetchPedidos();
     }, []);
 
+    useEffect(() => {
+        const total = Math.max(1, Math.ceil(pedidos.length / PAGE_SIZE));
+        if (currentPage > total) {
+            setCurrentPage(total);
+        }
+    }, [pedidos.length, currentPage]);
+
     if (loading) return <p className="text-center text-white mt-8">Cargando pedidos...</p>;
     if (error) return <p className="text-center text-red-500 mt-8">Error: {error}</p>;
+    if (pedidos.length === 0) {
+        return <p className="text-center text-white mt-8">No hay pedidos registrados.</p>;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(pedidos.length / PAGE_SIZE));
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const paginatedPedidos = pedidos.slice(startIndex, startIndex + PAGE_SIZE);
 
     return (
         <div className="w-full flex justify-center mt-6 mb-15">
@@ -66,7 +85,7 @@ export default function PedidosTable() {
                         </thead>
 
                         <tbody>
-                            {pedidos.map((p) => (
+                            {paginatedPedidos.map((p) => (
                                 <tr
                                     key={p.id}
                                     className="bg-[#A26B6B] text-white border border-[#fff] transition-colors"
@@ -120,16 +139,10 @@ export default function PedidosTable() {
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
                                         <div className="flex justify-center gap-3">
                                             <Link href={`/admin/pedidos/${p.id}`}>
-                                                <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition">
-                                                    Ver
+                                                <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition cursor-pointer">
+                                                    Ver detalle
                                                 </button>
                                             </Link>
-                                            <button
-                                                onClick={() => alert(`Eliminar pedido ${p.id}`)}
-                                                className="bg-[#530708] hover:bg-[#3D0506] text-white font-semibold px-3 py-1 rounded transition"
-                                            >
-                                                Eliminar
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -137,9 +150,25 @@ export default function PedidosTable() {
                         </tbody>
                     </table>
 
-                    {pedidos.length === 0 && (
-                        <p className="text-center text-white mt-4">No hay pedidos registrados.</p>
-                    )}
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+                        >
+                            Anterior
+                        </button>
+                        <span className="text-sm text-gray-700">
+                            Página {currentPage} de {totalPages}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+                        >
+                            Siguiente
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

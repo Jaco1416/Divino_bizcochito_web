@@ -69,7 +69,7 @@ export default function ProductosPage() {
           {/* Tabla de productos */}
           <ProductTable productos={productos} />
           <Link href="/admin/productos/crear">
-            <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-5 py-2 rounded-lg transition">
+            <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-5 py-2 rounded-lg transition cursor-pointer">
               + Nuevo producto
             </button>
           </Link>

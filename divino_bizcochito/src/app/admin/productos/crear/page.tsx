@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Producto {
     nombre: string;
@@ -35,6 +36,7 @@ interface Relleno {
 
 export default function CrearProductoPage() {
     const router = useRouter();
+    const { showAlert } = useAlert();
 
     const [producto, setProducto] = useState<Producto>({
         nombre: "",
@@ -115,6 +117,11 @@ export default function CrearProductoPage() {
         setSaving(true);
 
         try {
+            if (producto.precio <= 0) {
+                showAlert("El precio debe ser mayor a 0.", "warning");
+                setSaving(false);
+                return;
+            }
             const formData = new FormData();
 
             formData.append("nombre", producto.nombre);
@@ -133,11 +140,11 @@ export default function CrearProductoPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Error al crear producto");
 
-            alert("✅ Producto creado correctamente");
+            showAlert("✅ Producto creado correctamente", "success");
             router.push("/admin/productos");
         } catch (error) {
             console.error("❌ Error al crear producto:", error);
-            alert("❌ No se pudo crear el producto");
+            showAlert("❌ No se pudo crear el producto", "error");
         } finally {
             setSaving(false);
         }
@@ -321,6 +328,7 @@ export default function CrearProductoPage() {
 
                                 <input
                                     type="number"
+                                    min="1"
                                     name="precio"
                                     value={producto.precio}
                                     onChange={handleChange}
@@ -331,7 +339,7 @@ export default function CrearProductoPage() {
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition"
+                                    className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition cursor-pointer"
                                 >
                                     {saving ? "Guardando..." : "Crear"}
                                 </button>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Producto {
   id?: string;
@@ -38,6 +39,7 @@ export default function EditarProductoPage() {
   const { id } = useParams();
   const productId = Array.isArray(id) ? id[0] : id; // aseguras que sea un string
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [producto, setProducto] = useState<Producto>({
     nombre: "",
@@ -55,6 +57,7 @@ export default function EditarProductoPage() {
   const [preview, setPreview] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [imagenFile, setImagenFile] = useState<File | null>(null);
 
 
   // 🔁 Cargar datos del producto + listas
@@ -85,7 +88,7 @@ export default function EditarProductoPage() {
         if (relRes.ok) setRellenos(relData);
       } catch (error) {
         console.error("❌ Error al cargar producto:", error);
-        alert("No se pudo cargar el producto");
+        showAlert("No se pudo cargar el producto", "error");
       } finally {
         setLoading(false);
       }
@@ -113,7 +116,7 @@ export default function EditarProductoPage() {
 
     const url = URL.createObjectURL(file);
     setPreview(url);
-    setProducto((prev) => ({ ...prev, imagen: file.name }));
+    setImagenFile(file);
   };
 
   // 💾 Guardar cambios
@@ -132,28 +135,25 @@ export default function EditarProductoPage() {
       formData.append("toppingId", producto.toppingId || "");
       formData.append("rellenoId", producto.rellenoId || "");
 
-      // ✅ Manejar correctamente imagen nueva o existente
-      if (producto.imagen instanceof File) {
-        // Si hay nueva imagen seleccionada
-        formData.append("imagen", producto.imagen);
-      } else if (typeof producto.imagen === "string") {
-        // Si se mantiene la URL existente
+      if (imagenFile) {
+        formData.append("imagen", imagenFile);
+      } else if (typeof producto.imagen === "string" && producto.imagen) {
         formData.append("imagenUrl", producto.imagen);
       }
 
       const res = await fetch("/api/productos", {
         method: "PUT",
-        body: formData, // 👈 Enviamos FormData, sin headers manuales
+        body: formData,
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al actualizar producto");
 
-      alert("✅ Producto actualizado correctamente");
+      showAlert("✅ Producto actualizado correctamente", "success");
       router.push("/admin/productos");
     } catch (error) {
       console.error("❌ Error al actualizar producto:", error);
-      alert("❌ No se pudo actualizar el producto");
+      showAlert("❌ No se pudo actualizar el producto", "error");
     } finally {
       setSaving(false);
     }
@@ -360,7 +360,7 @@ export default function EditarProductoPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition"
+                  className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition cursor-pointer"
                 >
                   {saving ? "Guardando..." : "Guardar cambios"}
                 </button>

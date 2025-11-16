@@ -107,6 +107,31 @@ export async function DELETE(request: Request) {
       );
     }
 
+    // Obtener un topping alternativo
+    const { data: fallbackTopping, error: fallbackError } = await supabaseAdmin
+      .from(TABLE_NAME)
+      .select("id")
+      .neq("id", id)
+      .order("id", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (fallbackError) throw fallbackError;
+    if (!fallbackTopping) {
+      return NextResponse.json(
+        { error: "No se puede eliminar el topping porque no existe un topping alternativo." },
+        { status: 400 }
+      );
+    }
+
+    // Actualizar productos que usan este topping
+    const { error: updateError } = await supabaseAdmin
+      .from("Producto")
+      .update({ toppingId: fallbackTopping.id })
+      .eq("toppingId", id);
+
+    if (updateError) throw updateError;
+
     const { error } = await supabaseAdmin.from(TABLE_NAME).delete().eq("id", id);
 
     if (error) throw error;

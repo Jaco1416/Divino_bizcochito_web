@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAlert } from "@/app/hooks/useAlert";
 import Link from "next/link";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
@@ -9,6 +9,8 @@ interface Topping {
     nombre: string;
     descripcion?: string;
 }
+
+const PAGE_SIZE = 5;
 
 interface ToppingTableProps {
     toppings: Topping[];
@@ -21,6 +23,7 @@ export default function ToppingsTable({ toppings }: ToppingTableProps) {
     const [toppingsList, setToppingsList] = useState<Topping[]>(toppings);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedToppingId, setSelectedToppingId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // 🧱 Abrir modal
     const handleDeleteClick = (id: string) => {
@@ -53,6 +56,13 @@ export default function ToppingsTable({ toppings }: ToppingTableProps) {
         }
     };
 
+    useEffect(() => {
+        const total = Math.max(1, Math.ceil(toppingsList.length / PAGE_SIZE));
+        if (currentPage > total) {
+            setCurrentPage(total);
+        }
+    }, [toppingsList.length, currentPage]);
+
     if (toppingsList.length === 0) {
         return (
             <p className="text-center text-gray-600 mt-6">
@@ -60,6 +70,10 @@ export default function ToppingsTable({ toppings }: ToppingTableProps) {
             </p>
         );
     }
+
+    const totalPages = Math.max(1, Math.ceil(toppingsList.length / PAGE_SIZE));
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const paginatedToppings = toppingsList.slice(startIndex, startIndex + PAGE_SIZE);
 
     return (
         <div className="w-full flex justify-center mt-6">
@@ -74,7 +88,7 @@ export default function ToppingsTable({ toppings }: ToppingTableProps) {
                             </tr>
                         </thead>
                         <tbody>
-                            {toppingsList.map((topping) => (
+                            {paginatedToppings.map((topping) => (
                                 <tr
                                     key={topping.id}
                                     className="bg-[#A26B6B] text-white border border-[#ffff] transition-colors"
@@ -88,13 +102,13 @@ export default function ToppingsTable({ toppings }: ToppingTableProps) {
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
                                         <div className="flex justify-center gap-3">
                                             <Link href={`/admin/toppings/${topping.id}`}>
-                                                <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition">
+                                                <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition cursor-pointer">
                                                     Editar
                                                 </button>
                                             </Link>
                                             <button
                                                 onClick={() => handleDeleteClick(topping.id)}
-                                                className="bg-[#530708] hover:bg-[#3D0506] text-white font-semibold px-3 py-1 rounded transition"
+                                                className="bg-[#530708] hover:bg-[#3D0506] text-white font-semibold px-3 py-1 rounded transition cursor-pointer"
                                             >
                                                 Eliminar
                                             </button>
@@ -104,6 +118,25 @@ export default function ToppingsTable({ toppings }: ToppingTableProps) {
                             ))}
                         </tbody>
                     </table>
+                </div>
+                <div className="flex items-center justify-center gap-4 mt-4">
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+                    >
+                        Anterior
+                    </button>
+                    <span className="text-sm text-gray-700">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+                    >
+                        Siguiente
+                    </button>
                 </div>
             </div>
 

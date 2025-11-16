@@ -48,6 +48,8 @@ export default function Home() {
   const [loadingRecetas, setLoadingRecetas] = useState<boolean>(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProductId, setDeleteProductId] = useState<string | null>(null);
+  const [recipeModalOpen, setRecipeModalOpen] = useState(false);
+  const [selectedRecetaId, setSelectedRecetaId] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -123,6 +125,15 @@ export default function Home() {
     router.push(`/admin/productos/${id}`);
   };
 
+  const handleEditReceta = (id: string) => {
+    router.push(`/views/recetas/detalle/${id}`);
+  };
+
+  const handleDeleteReceta = (id: string) => {
+    setSelectedRecetaId(id);
+    setRecipeModalOpen(true);
+  };
+
   const handleViewProduct = (id: string) => {
     router.push(`/views/producto/${id}`);
   };
@@ -171,6 +182,31 @@ export default function Home() {
     } finally {
       setModalOpen(false);
       setDeleteProductId(null);
+    }
+  };
+
+  const handleConfirmDeleteReceta = async () => {
+    if (!selectedRecetaId) return;
+
+    try {
+      const res = await fetch(`/api/recetas/${selectedRecetaId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al eliminar receta");
+      }
+
+      showAlert("✅ Receta eliminada correctamente", "success");
+      setRecetas((prev) => prev.filter((receta) => receta.id !== selectedRecetaId));
+    } catch (error) {
+      console.error("❌ Error al eliminar receta:", error);
+      showAlert("❌ No se pudo eliminar la receta", "error");
+    } finally {
+      setRecipeModalOpen(false);
+      setSelectedRecetaId(null);
     }
   };
 
@@ -246,6 +282,8 @@ export default function Home() {
                 autor={receta.autor}
                 descripcion={receta.descripcion}
                 imagen={receta.imagenUrl}
+                onEdit={() => handleEditReceta(receta.id)}
+                onDelete={() => handleDeleteReceta(receta.id)}
                 onView={() => handleViewReceta(receta.id)}
                 isAdmin={isAdmin}
                 isOwner={receta.autorId === perfil?.id}
@@ -261,7 +299,22 @@ export default function Home() {
         confirmText="Eliminar"
         cancelText="Cancelar"
         onConfirm={handleConfirmDelete}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          setModalOpen(false);
+          setDeleteProductId(null);
+        }}
+      />
+      <ConfirmModal
+        isOpen={recipeModalOpen}
+        title="Eliminar receta"
+        message="¿Deseas eliminar esta receta? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmDeleteReceta}
+        onCancel={() => {
+          setRecipeModalOpen(false);
+          setSelectedRecetaId(null);
+        }}
       />
     </main>
   );

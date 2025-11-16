@@ -65,7 +65,7 @@ export default function CategoriasPage() {
           {/* Botón nuevo */}
           <div className="w-full flex justify-start">
             <Link href="/admin/categorias/crear">
-              <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-5 py-2 rounded-lg transition">
+              <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-5 py-2 rounded-lg transition cursor-pointer">
                 + Nueva categoría
               </button>
             </Link>

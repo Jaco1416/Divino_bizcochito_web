@@ -4,11 +4,13 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from '@/context/AuthContext';
 import RecipeDetail from '@/app/components/RecipeDetail/RecipeDetail'
+import { useAlert } from "@/app/hooks/useAlert";
 
 function DetalleRecipePage() {
   const { id } = useParams(); // obtiene el id desde la URL
   const router = useRouter();
   const { user, perfil } = useAuth();
+  const { showAlert } = useAlert();
   const [receta, setReceta] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -62,11 +64,11 @@ function DetalleRecipePage() {
         throw new Error(errorData.error || "Error al publicar receta");
       }
       
-      alert("✅ Receta publicada correctamente");
+      showAlert("✅ Receta publicada correctamente", "success");
       router.push("/admin/recetas");
     } catch (error) {
       console.error(error);
-      alert("❌ No se pudo publicar la receta");
+      showAlert("❌ No se pudo publicar la receta", "error");
     }
   };
 
@@ -86,11 +88,11 @@ function DetalleRecipePage() {
         throw new Error(errorData.error || "Error al rechazar receta");
       }
       
-      alert("❌ Receta rechazada correctamente");
+      showAlert("❌ Receta rechazada correctamente", "success");
       router.push("/admin/recetas");
     } catch (error) {
       console.error(error);
-      alert("❌ No se pudo rechazar la receta");
+      showAlert("❌ No se pudo rechazar la receta", "error");
     }
   };
 
@@ -111,11 +113,11 @@ function DetalleRecipePage() {
         throw new Error(errorData.error || "Error al eliminar receta");
       }
       
-      alert("✅ Receta eliminada correctamente");
+      showAlert("✅ Receta eliminada correctamente", "success");
       router.push("/views/recetas");
     } catch (error) {
       console.error(error);
-      alert("❌ No se pudo eliminar la receta");
+      showAlert("❌ No se pudo eliminar la receta", "error");
     }
   };
 
@@ -135,12 +137,12 @@ function DetalleRecipePage() {
         throw new Error(errorData.error || "Error al guardar cambios");
       }
 
-      alert("✅ Cambios guardados correctamente");
+      showAlert("✅ Cambios guardados correctamente", "success");
       // Recargar la receta actualizada
       fetchReceta();
     } catch (error) {
       console.error(error);
-      alert("❌ No se pudieron guardar los cambios");
+      showAlert("❌ No se pudieron guardar los cambios", "error");
     }
   };
 

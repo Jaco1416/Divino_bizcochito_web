@@ -2,10 +2,12 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { useAlert } from "@/app/hooks/useAlert";
 
 function LoginCard() {
 
     const router = useRouter();
+    const { showAlert } = useAlert();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -13,7 +15,7 @@ function LoginCard() {
         e.preventDefault();
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (!error) router.push("/");
-        else alert("Error: " + error.message);
+        else showAlert("❌ " + ("Usuario / contraseña incorrectos."), "error");
 
     };
 
@@ -59,6 +61,12 @@ function LoginCard() {
                         ¿Ya tienes cuenta?{" "}
                         <a href="/views/registro" className="underline text-orange-950 hover:text-white/90">
                             Regístrate.
+                        </a>
+                    </p>
+                    <p className="text-sm text-white/90 -mt-1">
+                        ¿Olvidaste tu contraseña?{" "}
+                        <a href="/views/ForgotPassword" className="underline text-orange-950 hover:text-white/90">
+                            recuperar contraseña.
                         </a>
                     </p>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import PerfilCard from '@/app/components/PerfilCard/PerfilCard';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from "next/navigation";
@@ -12,8 +12,19 @@ import MisRecetas from '@/app/components/MisRecetas/MisRecetas';
 function PerfilPage() {
     const { user, perfil, loading } = useAuth();
     const router = useRouter();
+    const [refreshing, setRefreshing] = useState(false);
 
-    if (loading) {
+    useEffect(() => {
+        const handleFocus = () => {
+            setRefreshing(true);
+            setTimeout(() => setRefreshing(false), 500);
+        };
+
+        window.addEventListener("focus", handleFocus);
+        return () => window.removeEventListener("focus", handleFocus);
+    }, []);
+
+    if (loading || refreshing) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <p className="text-gray-600 text-lg">Cargando perfil...</p>
@@ -38,7 +49,7 @@ function PerfilPage() {
                         email={user?.email || "juan.perez@example.com"}
                         telefono={perfil?.telefono || "+56 9 1234 5678"}
                         imagen={perfil?.imagen || "/path/to/image.jpg"}
-                        onEditar={() => console.log("Editar perfil")}
+                        onEditar={() => router.push('/views/perfil/editar')}
                     />
                     {perfil?.rol?.toLowerCase() === "admin" ? (
                         <AdminOptions

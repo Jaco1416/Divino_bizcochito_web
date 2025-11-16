@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAlert } from "@/app/hooks/useAlert";
 import Link from "next/link";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
@@ -9,6 +9,8 @@ interface Categoria {
   nombre: string;
   descripcion?: string;
 }
+
+const PAGE_SIZE = 5;
 
 interface CategoriasTableProps {
   categorias: Categoria[];
@@ -22,6 +24,7 @@ export default function CategoriasTable({ categorias }: CategoriasTableProps) {
   const [selectedCategoriaId, setSelectedCategoriaId] = useState<string | null>(
     null
   );
+  const [currentPage, setCurrentPage] = useState(1);
 
   // 🧱 Abrir modal
   const handleDeleteClick = (id: string) => {
@@ -56,6 +59,13 @@ export default function CategoriasTable({ categorias }: CategoriasTableProps) {
     }
   };
 
+  useEffect(() => {
+    const total = Math.max(1, Math.ceil(categoriasList.length / PAGE_SIZE));
+    if (currentPage > total) {
+      setCurrentPage(total);
+    }
+  }, [categoriasList.length, currentPage]);
+
   if (categoriasList.length === 0) {
     return (
       <p className="text-center text-gray-600 mt-6">
@@ -63,6 +73,13 @@ export default function CategoriasTable({ categorias }: CategoriasTableProps) {
       </p>
     );
   }
+
+  const totalPages = Math.max(1, Math.ceil(categoriasList.length / PAGE_SIZE));
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedCategorias = categoriasList.slice(
+    startIndex,
+    startIndex + PAGE_SIZE
+  );
 
   return (
     <div className="w-full flex justify-center mt-6">
@@ -79,7 +96,7 @@ export default function CategoriasTable({ categorias }: CategoriasTableProps) {
               </tr>
             </thead>
             <tbody>
-              {categoriasList.map((categoria) => (
+              {paginatedCategorias.map((categoria) => (
                 <tr
                   key={categoria.id}
                   className="bg-[#A26B6B] text-white border border-[#ffff] transition-colors"
@@ -93,13 +110,13 @@ export default function CategoriasTable({ categorias }: CategoriasTableProps) {
                   <td className="px-4 py-2 border border-[#8B3A3A]">
                     <div className="flex justify-center gap-3">
                       <Link href={`/admin/categorias/${categoria.id}`}>
-                        <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition">
+                        <button className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-3 py-1 rounded transition cursor-pointer">
                           Editar
                         </button>
                       </Link>
                       <button
                         onClick={() => handleDeleteClick(categoria.id)}
-                        className="bg-[#530708] hover:bg-[#3D0506] text-white font-semibold px-3 py-1 rounded transition"
+                        className="bg-[#530708] hover:bg-[#3D0506] text-white font-semibold px-3 py-1 rounded transition cursor-pointer"
                       >
                         Eliminar
                       </button>
@@ -109,6 +126,27 @@ export default function CategoriasTable({ categorias }: CategoriasTableProps) {
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+          >
+            Anterior
+          </button>
+          <span className="text-sm text-gray-700">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+          >
+            Siguiente
+          </button>
         </div>
       </div>
 

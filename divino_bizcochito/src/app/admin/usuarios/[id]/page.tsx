@@ -95,6 +95,7 @@ export default function GetUsuario() {
                             name="nombre"
                             value={usuario?.nombre || ""}
                             onChange={handleChange}
+                            required
                             className="w-full border border-[#ffff] rounded-lg px-3 py-2 text-[#530708] bg-white focus:ring-2 focus:ring-[#C72C2F]"
                         />
                     </div>
@@ -107,6 +108,7 @@ export default function GetUsuario() {
                             name="telefono"
                             value={usuario?.telefono || ""}
                             onChange={handleChange}
+                            required
                             className="w-full border border-[#ffff] rounded-lg px-3 py-2 text-[#530708] bg-white focus:ring-2 focus:ring-[#C72C2F]"
                         />
                     </div>
@@ -118,6 +120,7 @@ export default function GetUsuario() {
                             name="rol"
                             value={usuario?.rol || "cliente"}
                             onChange={handleChange}
+                            required
                             className="w-full border border-[#ffff] rounded-lg px-3 py-2 text-[#530708] bg-white focus:ring-2 focus:ring-[#C72C2F]"
                         >
                             <option value="admin">Administrador</option>

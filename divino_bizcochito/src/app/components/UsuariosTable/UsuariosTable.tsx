@@ -1,19 +1,31 @@
 "use client";
 import Link from "next/link";
 import { useAlert } from "@/app/hooks/useAlert";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ConfirmModal from "../ui/ConfirmModal";
+
+const PAGE_SIZE = 5;
 
 interface UsuariosTableProps {
     usuarios: any[];
+    onDelete?: (id: string) => void;
 }
 
-export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
+export default function UsuariosTable({ usuarios, onDelete }: UsuariosTableProps) {
 
     const { showAlert } = useAlert();
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rolFiltro, setRolFiltro] = useState<string>("todos");
 
+
+    useEffect(() => {
+        const total = Math.max(1, Math.ceil(usuarios.length / PAGE_SIZE));
+        if (currentPage > total) {
+            setCurrentPage(total);
+        }
+    }, [usuarios.length, currentPage]);
 
     if (usuarios.length === 0) {
         return (
@@ -22,6 +34,15 @@ export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
             </p>
         );
     }
+
+    const usuariosFiltrados =
+        rolFiltro === "todos"
+            ? usuarios
+            : usuarios.filter((user) => user.rol === rolFiltro);
+
+    const totalPages = Math.max(1, Math.ceil(usuariosFiltrados.length / PAGE_SIZE));
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const paginatedUsuarios = usuariosFiltrados.slice(startIndex, startIndex + PAGE_SIZE);
 
     const handleDeleteClick = (id: string) => {
         setSelectedUserId(id);
@@ -37,10 +58,11 @@ export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
 
             if (!res.ok) throw new Error(data.error || "Error al eliminar usuario");
 
-            showAlert("✅ Usuario eliminado correctamente");
+            showAlert("✅ Usuario eliminado correctamente", "success");
+            onDelete?.(selectedUserId);
         } catch (error) {
             console.error("❌ Error al eliminar usuario:", error);
-            showAlert("❌ No se pudo eliminar el usuario");
+            showAlert("❌ No se pudo eliminar el usuario", "error");
         } finally {
             setModalOpen(false);
             setSelectedUserId(null);
@@ -48,7 +70,21 @@ export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
     };
 
     return (
-        <div className="w-full flex justify-center mt-6">
+        <div className="w-full flex flex-col items-center mt-6 gap-4">
+            <div className="w-full max-w-6xl px-6 py-1 flex justify-end">
+                <select
+                    value={rolFiltro}
+                    onChange={(e) => {
+                        setRolFiltro(e.target.value);
+                        setCurrentPage(1);
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
+                >
+                    <option value="todos">Todos los roles</option>
+                    <option value="admin">Administrador</option>
+                    <option value="cliente">Cliente</option>
+                </select>
+            </div>
             <div className="w-full max-w-6xl px-6 py-4">
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-center text-sm text-white">
@@ -62,7 +98,7 @@ export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
                             </tr>
                         </thead>
                         <tbody>
-                            {usuarios.map((user) => (
+                            {paginatedUsuarios.map((user) => (
                                 <tr
                                     key={user.id}
                                     className="bg-[#A26B6B] text-white border border-[#ffff] transition-colors"
@@ -102,6 +138,25 @@ export default function UsuariosTable({ usuarios }: UsuariosTableProps) {
                             ))}
                         </tbody>
                     </table>
+                </div>
+                <div className="flex items-center justify-center gap-4 mt-4">
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+                    >
+                        Anterior
+                    </button>
+                    <span className="text-sm text-gray-700">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-60"
+                    >
+                        Siguiente
+                    </button>
                 </div>
             </div>
             <ConfirmModal

@@ -84,8 +84,8 @@ export default function RecetasCard({
 
         {/* Botones */}
         <div className="flex items-center justify-between mt-4 pt-2 border-t border-[#e0d3c0]">
-          {showActions && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
+            {showActions && (
               <button
                 onClick={() => onEdit?.(id)}
                 className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
@@ -93,6 +93,8 @@ export default function RecetasCard({
               >
                 <FaPen size={14} />
               </button>
+            )}
+            {showActions && (
               <button
                 onClick={() => onDelete?.(id)}
                 className="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors cursor-pointer"
@@ -100,8 +102,8 @@ export default function RecetasCard({
               >
                 <FaTrashAlt size={14} />
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
           <button
             onClick={() => onView?.(id)}

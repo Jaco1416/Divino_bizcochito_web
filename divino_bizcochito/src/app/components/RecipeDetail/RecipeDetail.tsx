@@ -13,6 +13,7 @@ interface RecipeDetailProps {
     imagenUrl: string;
     ingredientes: string;
     pasos: string;
+    estado?: string;
   };
   isAdmin?: boolean;
   isOwner?: boolean;
@@ -43,6 +44,7 @@ export default function RecipeDetail({
   });
 
   const canEdit = isAdmin || isOwner;
+  const isPublished = receta?.estado === "publicada";
 
   if (!receta || !receta.titulo) {
     return <p>Cargando...</p>;
@@ -144,7 +146,7 @@ export default function RecipeDetail({
                 value={editedReceta.descripcion || "Sin descripción"}
                 onChange={(e) => setEditedReceta({ ...editedReceta, descripcion: e.target.value })}
                 readOnly={!canEdit}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F] resize-none ${!canEdit ? 'bg-gray-50' : 'bg-white'}`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:outline-none focus:ring-0 focus:border-gray-300 resize-none ${!canEdit ? 'bg-gray-50' : 'bg-white'}`}
                 rows={3}
               />
             </div>
@@ -157,7 +159,7 @@ export default function RecipeDetail({
                 value={editedReceta.ingredientes}
                 onChange={(e) => setEditedReceta({ ...editedReceta, ingredientes: e.target.value })}
                 readOnly={!canEdit}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F] resize-none ${!canEdit ? 'bg-gray-50' : 'bg-white'}`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:outline-none focus:ring-0 focus:border-gray-300 resize-none ${!canEdit ? 'bg-gray-50' : 'bg-white'}`}
                 rows={6}
               />
             </div>
@@ -170,7 +172,7 @@ export default function RecipeDetail({
                 value={editedReceta.pasos}
                 onChange={(e) => setEditedReceta({ ...editedReceta, pasos: e.target.value })}
                 readOnly={!canEdit}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F] resize-none ${!canEdit ? 'bg-gray-50' : 'bg-white'}`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:outline-none focus:ring-0 focus:border-gray-300 resize-none ${!canEdit ? 'bg-gray-50' : 'bg-white'}`}
                 rows={6}
               />
             </div>
@@ -184,7 +186,7 @@ export default function RecipeDetail({
             <button
               onClick={handleGuardar}
               disabled={loading}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60 cursor-pointer"
             >
               {loading ? "Guardando..." : "Guardar cambios"}
             </button>
@@ -193,17 +195,19 @@ export default function RecipeDetail({
           {/* Mostrar ambos si es admin */}
           {isAdmin ? (
             <>
-              <button
-                onClick={handlePublicar}
-                disabled={loading}
-                className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60"
-              >
-                {loading ? "Procesando..." : "Publicar"}
-              </button>
+              {!isPublished && (
+                <button
+                  onClick={handlePublicar}
+                  disabled={loading}
+                  className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60 cursor-pointer"
+                >
+                  {loading ? "Procesando..." : "Publicar"}
+                </button>
+              )}
               <button
                 onClick={handleRechazar}
                 disabled={loading}
-                className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60"
+                className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60 cursor-pointer"
               >
                 {loading ? "Procesando..." : "Rechazar"}
               </button>
@@ -213,7 +217,7 @@ export default function RecipeDetail({
             <button
               onClick={handleEliminar}
               disabled={loading}
-              className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60"
+              className="bg-[#C72C2F] hover:bg-[#A92225] text-white font-semibold px-6 py-2 rounded-lg transition disabled:opacity-60 cursor-pointer"
             >
               {loading ? "Eliminando..." : "Eliminar receta"}
             </button>

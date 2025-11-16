@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Topping {
   id?: string;
@@ -14,6 +15,7 @@ interface Topping {
 export default function EditarToppingPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [topping, setTopping] = useState<Topping>({
     nombre: "",
@@ -34,7 +36,7 @@ export default function EditarToppingPage() {
         setTopping(data);
       } catch (error) {
         console.error("❌ Error al cargar topping:", error);
-        alert("No se pudo cargar el topping");
+        showAlert("No se pudo cargar el topping", "error");
       } finally {
         setLoading(false);
       }
@@ -66,11 +68,11 @@ export default function EditarToppingPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al actualizar topping");
 
-      alert("✅ Topping actualizado correctamente");
+      showAlert("✅ Topping actualizado correctamente", "success");
       router.push("/admin/toppings");
     } catch (error) {
       console.error("❌ Error al actualizar topping:", error);
-      alert("❌ No se pudo actualizar el topping");
+      showAlert("❌ No se pudo actualizar el topping", "error");
     } finally {
       setSaving(false);
     }
@@ -99,6 +101,7 @@ export default function EditarToppingPage() {
                 type="text"
                 name="nombre"
                 value={topping.nombre}
+                required
                 onChange={handleChange}
                 placeholder="Ingresar nombre..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
@@ -113,6 +116,7 @@ export default function EditarToppingPage() {
               <textarea
                 name="descripcion"
                 value={topping.descripcion}
+                required
                 onChange={handleChange}
                 placeholder="Ingresar descripción..."
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"

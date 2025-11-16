@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Relleno {
   nombre: string;
@@ -13,6 +14,7 @@ interface Relleno {
 
 export default function CrearRellenoPage() {
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [relleno, setRelleno] = useState<Relleno>({
     nombre: "",
@@ -50,11 +52,11 @@ export default function CrearRellenoPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear relleno");
 
-      alert("✅ Relleno creado correctamente");
+      showAlert("✅ Relleno creado correctamente", "success");
       router.push("/admin/rellenos");
     } catch (error) {
       console.error("❌ Error al crear relleno:", error);
-      alert("❌ No se pudo crear el relleno");
+      showAlert("❌ No se pudo crear el relleno", "error");
     } finally {
       setSaving(false);
     }

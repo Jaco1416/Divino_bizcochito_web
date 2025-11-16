@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import ConfirmModal from "@/app/components/ui/ConfirmModal";
 
 interface Categoria {
     id: number;
@@ -34,10 +37,13 @@ export default function DetalleProducto({
     rellenos,
     toppings,
 }: DetalleProductoProps) {
+    const { user, loading } = useAuth();
+    const router = useRouter();
     const [toppingSeleccionado, setToppingSeleccionado] = useState<number | null>(null);
     const [rellenoSeleccionado, setRellenoSeleccionado] = useState<number | null>(null);
     const [cantidad, setCantidad] = useState<number>(1);
     const [mensaje, setMensaje] = useState<string>("");
+    const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
     const categoriaNombre =
         categorias.find((cat) => cat.id === producto.categoriaId)?.nombre || "Sin categoría";
@@ -49,13 +55,27 @@ export default function DetalleProducto({
         setCantidad(value);
     };
 
-    const handleAgregarPedido = () => {
+    const validarSeleccion = () => {
         // 🧩 Validaciones básicas
         if (!toppingSeleccionado || !rellenoSeleccionado) {
             alert("Por favor selecciona un topping y un relleno antes de continuar.");
+            return false;
+        }
+        return true;
+    };
+
+    const handleAgregarPedido = () => {
+        if (!user) {
+            router.push("/views/login");
             return;
         }
 
+        if (!validarSeleccion()) return;
+
+        setMostrarConfirmacion(true);
+    };
+
+    const confirmarAgregarPedido = () => {
         // 🛒 Crear objeto pedido
         const nuevoPedido = {
             id: producto.id,
@@ -94,7 +114,12 @@ export default function DetalleProducto({
 
         console.log("🛒 Carrito actualizado:", pedidosGuardados);
         alert("Producto agregado al carrito 🛒");
+        setMostrarConfirmacion(false);
     };
+
+    if (loading) {
+        return <p className="text-center py-10">Validando sesión...</p>;
+    }
 
     if (!producto || !categorias.length || !rellenos.length || !toppings.length) {
         return <p className="text-center py-10">Cargando datos del producto...</p>;
@@ -191,6 +216,15 @@ export default function DetalleProducto({
                     Agregar pedido
                 </button>
             </div>
+            <ConfirmModal
+                isOpen={mostrarConfirmacion}
+                title="Agregar al carrito"
+                message={`¿Deseas agregar ${cantidad} unidad(es) de "${producto.nombre}" al carrito?`}
+                confirmText="Sí, agregar"
+                cancelText="Cancelar"
+                onConfirm={confirmarAgregarPedido}
+                onCancel={() => setMostrarConfirmacion(false)}
+            />
         </div>
     );
 }

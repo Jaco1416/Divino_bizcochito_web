@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Topping {
   nombre: string;
@@ -12,6 +13,7 @@ interface Topping {
 
 export default function CrearToppingPage() {
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [topping, setTopping] = useState<Topping>({
     nombre: "",
@@ -34,6 +36,12 @@ export default function CrearToppingPage() {
     setSaving(true);
 
     try {
+      if (!topping.nombre.trim() || !topping.descripcion.trim()) {
+        showAlert("Completa todos los campos antes de continuar.", "warning");
+        setSaving(false);
+        return;
+      }
+
       const res = await fetch("/api/toppings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,11 +51,11 @@ export default function CrearToppingPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear topping");
 
-      alert("✅ Topping creado correctamente");
+      showAlert("✅ Topping creado correctamente", "success");
       router.push("/admin/toppings");
     } catch (error) {
       console.error("❌ Error al crear topping:", error);
-      alert("❌ No se pudo crear el topping");
+      showAlert("❌ No se pudo crear el topping", "error");
     } finally {
       setSaving(false);
     }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import BackButton from "@/app/components/BackButton/BackButton";
 import PedidoDetail from "@/app/components/PedidoDetail/PedidoDetail";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface DatosEnvio {
     nombre: string;
@@ -37,6 +38,7 @@ interface Pedido {
 export default function DetallePedidoPage() {
     const { id } = useParams();
     const router = useRouter();
+    const { showAlert } = useAlert();
     const [pedido, setPedido] = useState<Pedido | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -50,6 +52,7 @@ export default function DetallePedidoPage() {
             setPedido(data);
         } catch (err) {
             console.error("❌ Error al obtener pedido:", err);
+            showAlert("No se pudo cargar el pedido", "error");
         } finally {
             setLoading(false);
         }
@@ -69,10 +72,11 @@ export default function DetallePedidoPage() {
             if (!res.ok) throw new Error("Error al avanzar estado");
 
             const result = await res.json();
-            console.log("✅", result.message);
+            showAlert(result.message || "Estado actualizado", "success");
             await fetchPedido(); // 🔁 refresca datos
         } catch (err) {
             console.error("❌ Error al avanzar estado:", err);
+            showAlert("No se pudo avanzar el estado", "error");
         }
     };
 
@@ -85,10 +89,11 @@ export default function DetallePedidoPage() {
             });
             if (!res.ok) throw new Error("Error al cancelar pedido");
 
-            console.log("🛑 Pedido cancelado correctamente");
+            showAlert("Pedido cancelado correctamente", "warning");
             await fetchPedido();
         } catch (err) {
             console.error("❌ Error al cancelar pedido:", err);
+            showAlert("No se pudo cancelar el pedido", "error");
         }
     };
 
@@ -104,10 +109,11 @@ export default function DetallePedidoPage() {
 
             if (!res.ok) throw new Error("Error al actualizar fecha de entrega");
 
-            console.log(`📅 Fecha de entrega actualizada a: ${date.toISOString()}`);
+            showAlert("Fecha de entrega actualizada.", "success");
             await fetchPedido();
         } catch (err) {
             console.error("❌ Error al actualizar la fecha de entrega:", err);
+            showAlert("No se pudo actualizar la fecha de entrega", "error");
         }
     };
 
@@ -119,10 +125,11 @@ export default function DetallePedidoPage() {
                 method: "DELETE",
             });
             if (!res.ok) throw new Error("Error al eliminar pedido");
-            alert("Pedido eliminado correctamente ✅");
+            showAlert("Pedido eliminado correctamente ✅", "success");
             router.push("/admin/pedidos"); // redirige al listado
         } catch (err) {
             console.error("❌ Error al eliminar pedido:", err);
+            showAlert("No se pudo eliminar el pedido", "error");
         }
     };
 

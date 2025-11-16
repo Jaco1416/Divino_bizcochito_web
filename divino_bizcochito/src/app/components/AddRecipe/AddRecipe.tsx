@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/app/components/protectedRoute/protectedRoute";
 import BackButton from "@/app/components/BackButton/BackButton";
 import ConfirmModal from "../ui/ConfirmModal";
+import { useAlert } from "@/app/hooks/useAlert";
 
 interface Receta {
     titulo: string;
@@ -19,6 +20,7 @@ interface Receta {
 export default function AddRecipe() {
     const { user } = useAuth();
     const router = useRouter();
+    const { showAlert } = useAlert();
     const [open, setOpen] = useState(false);
     const [receta, setReceta] = useState<Receta>({
         titulo: "",
@@ -52,7 +54,7 @@ export default function AddRecipe() {
     // 💾 Guardar receta
     const handleSubmit = async () => {
         if (!receta.titulo || !receta.descripcion || !receta.ingredientes || !receta.pasos) {
-            alert("Por favor completa todos los campos obligatorios.");
+            showAlert("Por favor completa todos los campos obligatorios.", "warning");
             return;
         }
 
@@ -76,11 +78,11 @@ export default function AddRecipe() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Error al crear la receta");
 
-            alert("✅ Receta creada correctamente (pendiente de aprobación).");
+            showAlert("✅ Receta creada correctamente (pendiente de aprobación).", "success");
             router.push("/admin/recetas");
         } catch (error) {
             console.error("❌ Error al crear receta:", error);
-            alert("❌ No se pudo crear la receta.");
+            showAlert("❌ No se pudo crear la receta.", "error");
         } finally {
             setSaving(false);
         }
@@ -146,6 +148,7 @@ export default function AddRecipe() {
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
+                                required
                                 onChange={handleImageChange}
                             />
                         </div>
@@ -225,6 +228,7 @@ export default function AddRecipe() {
                                     name="categoria"
                                     value={receta.categoria}
                                     onChange={handleChange}
+                                    required
                                     placeholder="Ej: Torta, Pie..."
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                                 />
