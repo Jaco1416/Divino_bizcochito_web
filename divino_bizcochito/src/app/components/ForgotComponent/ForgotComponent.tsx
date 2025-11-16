@@ -20,9 +20,7 @@ function ForgotComponent() {
 
     setSending(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/views/login`,
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
 
     if (error) {
       showAlert("❌ No pudimos enviar el correo. Intenta nuevamente.", "error");
