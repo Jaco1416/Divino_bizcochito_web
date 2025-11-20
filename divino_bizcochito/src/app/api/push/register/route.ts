@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     // Esto asocia el token con el perfil actual, o actualiza el token si el perfil ya tenía uno diferente.
     const { error: upsertError } = await supabaseAdmin
       .from('PushTokens')
-      .upsert(payload, { onConflict: 'perfilId' })
+      .upsert(payload, { onConflict: 'perfil_id' })
 
     if (upsertError) {
       console.error('❌ Error guardando token de push:', upsertError.message)
