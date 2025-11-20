@@ -4,10 +4,10 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { perfilId, userId, token } = body
+    const { perfil_id, userId, token } = body
 
-    // Determinar el perfilId final
-    const finalPerfilId: string | undefined = perfilId ?? userId
+    // Determinar el perfil_id final
+    const finalPerfilId: string | undefined = perfil_id ?? userId
 
     if (!token) {
       return NextResponse.json(
@@ -18,21 +18,21 @@ export async function POST(req: Request) {
 
     if (!finalPerfilId) {
       return NextResponse.json(
-        { ok: false, error: 'perfilId no proporcionado' },
+        { ok: false, error: 'perfil_id no proporcionado' },
         { status: 400 }
       )
     }
 
     // Payload alineado con tu schema real
     const payload = {
-      perfilId: finalPerfilId,
+      perfil_id: finalPerfilId,
       token
     }
 
-    // UPSERT correctamente usando la columna UNIQUE: perfilId
+    // UPSERT correctamente usando la columna UNIQUE: perfil_id
     const { error } = await supabaseAdmin
       .from('PushTokens')
-      .upsert(payload, { onConflict: 'perfilId' })
+      .upsert(payload, { onConflict: 'perfil_id' })
 
     if (error) {
       console.error('❌ Error guardando token de push:', error.message)
