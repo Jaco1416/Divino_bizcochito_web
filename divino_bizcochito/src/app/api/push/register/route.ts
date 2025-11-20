@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       .from('PushTokens')
       .delete()
       .eq('token', token)
-      .not('perfilId', 'eq', finalPerfilId)
+      .not('perfil_id', 'eq', finalPerfilId)
 
     if (deleteError) {
       // No es un error fatal, solo un log. El siguiente upsert podría fallar y eso está bien.
