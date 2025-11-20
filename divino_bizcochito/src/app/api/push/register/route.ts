@@ -29,14 +29,31 @@ export async function POST(req: Request) {
       token
     }
 
-    // UPSERT correctamente usando la columna UNIQUE: perfil_id
-    const { error } = await supabaseAdmin
+    // Antes de hacer el upsert, nos aseguramos de que el token no esté asignado a otro perfil.
+    // Esto es común si un usuario cierra sesión y otro inicia sesión en el mismo dispositivo.
+    const { error: deleteError } = await supabaseAdmin
       .from('PushTokens')
-      .upsert(payload, { onConflict: 'perfil_id' })
+      .delete()
+      .eq('token', token)
+      .not('perfilId', 'eq', finalPerfilId)
 
-    if (error) {
-      console.error('❌ Error guardando token de push:', error.message)
-      return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+    if (deleteError) {
+      // No es un error fatal, solo un log. El siguiente upsert podría fallar y eso está bien.
+      console.error('⚠️ Error eliminando token antiguo:', deleteError.message)
+    }
+
+    // UPSERT usando la columna UNIQUE: perfilId
+    // Esto asocia el token con el perfil actual, o actualiza el token si el perfil ya tenía uno diferente.
+    const { error: upsertError } = await supabaseAdmin
+      .from('PushTokens')
+      .upsert(payload, { onConflict: 'perfilId' })
+
+    if (upsertError) {
+      console.error('❌ Error guardando token de push:', upsertError.message)
+      return NextResponse.json(
+        { ok: false, error: upsertError.message },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({
