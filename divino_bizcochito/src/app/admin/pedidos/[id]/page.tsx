@@ -15,12 +15,18 @@ interface DatosEnvio {
 
 interface DetallePedido {
     id: number;
+    productoId: number | null;
     cantidad: number;
     precioUnitario: number;
     nombreProducto: string;
     imagenProducto: string | null;
     toppingId: number | null;
     rellenoId: number | null;
+    producto?: {
+        id: number;
+        nombre: string;
+        imagen: string | null;
+    } | null;
 }
 
 interface Pedido {

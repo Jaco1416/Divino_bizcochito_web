@@ -42,6 +42,10 @@ export default function CarritoCheck() {
     const [telefono, setTelefono] = useState("");
     const [rellenos, setRellenos] = useState<Opcion[]>([]);
     const [toppings, setToppings] = useState<Opcion[]>([]);
+    const [slots, setSlots] = useState<{ fecha: string; carga: number; restante: number }[]>([]);
+    const [fechaEntrega, setFechaEntrega] = useState("");
+    const [loadingDisponibilidad, setLoadingDisponibilidad] = useState(false);
+    const [superaMaximo, setSuperaMaximo] = useState(false);
 
     const costoEnvio = 2000;
 
@@ -85,6 +89,52 @@ export default function CarritoCheck() {
 
     }, []);
 
+    // Recalcular disponibilidad cuando cambia el carrito
+    useEffect(() => {
+        const fetchDisponibilidad = async () => {
+            if (!carrito.length) {
+                setSlots([]);
+                setFechaEntrega("");
+                return;
+            }
+
+            setLoadingDisponibilidad(true);
+            const totalProductos = carrito.reduce(
+                (acc, item) => acc + (item.cantidad ?? 0),
+                0
+            );
+
+            try {
+                const res = await fetch(`/api/configPedidos?items=${totalProductos}`);
+                if (!res.ok) throw new Error("No se pudo cargar la disponibilidad");
+                const data = await res.json();
+
+                const disponibles =
+                    data.slots?.filter(
+                        (s: any) => Number(s.restante) >= totalProductos
+                    ) ?? [];
+
+                setSlots(disponibles);
+                setSuperaMaximo(Boolean(data.superaMaximo));
+
+                if (disponibles.length) {
+                    setFechaEntrega(disponibles[0].fecha);
+                } else {
+                    setFechaEntrega("");
+                }
+            } catch (error) {
+                console.error("Error al cargar disponibilidad:", error);
+                showAlert("No se pudo cargar la disponibilidad de fechas.", "warning");
+                setSlots([]);
+                setFechaEntrega("");
+            } finally {
+                setLoadingDisponibilidad(false);
+            }
+        };
+
+        fetchDisponibilidad();
+    }, [carrito, showAlert]);
+
     const handlePay = async () => {
         if (tipoEntrega === "envio") {
             if (!nombre.trim() || !direccion.trim() || !correo.trim() || !telefono.trim()) {
@@ -104,6 +154,16 @@ export default function CarritoCheck() {
             }
         }
 
+        if (superaMaximo) {
+            showAlert("El pedido supera el máximo permitido de productos.", "warning");
+            return;
+        }
+
+        if (!fechaEntrega) {
+            showAlert("Selecciona una fecha de entrega disponible.", "warning");
+            return;
+        }
+
         try {
             console.log("Procesando pago...");
 
@@ -116,17 +176,22 @@ export default function CarritoCheck() {
             const carritoLocal = JSON.parse(carritoRaw);
             console.log("🧩 Carrito obtenido de localStorage:", carritoLocal);
 
+            const datosEnvioPayload = carritoLocal.datosEnvio
+                ? { ...carritoLocal.datosEnvio, fechaEntrega }
+                : {
+                      nombre,
+                      direccion,
+                      correo,
+                      telefono: telefono ? `+56 9 ${telefono}` : "",
+                      comentarios,
+                      fechaEntrega,
+                  };
+
             // 2️⃣ Armar los datos a guardar en Supabase
             const carritoData = {
                 perfilid: user.id || null, // ⚠️ Asegúrate de tener el id del perfil, no del auth.user
                 tipoentrega: carritoLocal.tipoEntrega || tipoEntrega || "retiro",
-                datosenvio: carritoLocal.datosEnvio || {
-                    nombre,
-                    direccion,
-                    correo,
-                    telefono: telefono ? `+56 9 ${telefono}` : "",
-                    comentarios,
-                },
+                datosenvio: datosEnvioPayload,
                 items: carritoLocal.items || carritoLocal, // Por si tu estructura es distinta
             };
 
@@ -193,6 +258,15 @@ export default function CarritoCheck() {
     const totalCarrito = carrito.reduce((acc, item) => acc + item.total, 0);
     const totalFinal =
         tipoEntrega === "envio" ? totalCarrito + costoEnvio : totalCarrito;
+    const isPayDisabled =
+        carrito.length === 0 ||
+        loadingDisponibilidad ||
+        superaMaximo ||
+        (!fechaEntrega && slots.length > 0);
+
+    const allowedDates = new Set(slots.map((s) => s.fecha));
+    const minFecha = slots.length ? slots[0].fecha : "";
+    const maxFecha = slots.length ? slots[slots.length - 1].fecha : "";
 
     return (
         <div className="max-w-6xl mx-auto p-6">
@@ -385,7 +459,31 @@ export default function CarritoCheck() {
                                 className="w-full border rounded-md p-2"
                             />
                         </div>
+
                     </fieldset>
+
+                    <div className="mt-4">
+                        <label className="block font-semibold mb-1">Fecha de entrega</label>
+                        <input
+                            type="date"
+                            value={fechaEntrega}
+                            min={minFecha || undefined}
+                            max={maxFecha || undefined}
+                            onChange={(e) => {
+                                const selected = e.target.value;
+                                if (selected && !allowedDates.has(selected)) {
+                                    showAlert("Esa fecha no está disponible. Elige una de la lista.", "warning");
+                                    return;
+                                }
+                                setFechaEntrega(selected);
+                            }}
+                            disabled={loadingDisponibilidad || slots.length === 0}
+                            className="w-full border rounded-md p-2"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                            Selecciona un día disponible según la capacidad.
+                        </p>
+                    </div>
                 </div>
 
                 {/* Resumen del total */}
@@ -403,13 +501,25 @@ export default function CarritoCheck() {
                                 <li>Envío: ${costoEnvio.toLocaleString("es-CL")}</li>
                             )}
                         </ul>
+
+                        {superaMaximo && (
+                            <p className="text-sm text-red-600 mt-4 text-center">
+                                El pedido supera el máximo permitido de productos.
+                            </p>
+                        )}
+
+                        {!loadingDisponibilidad && slots.length === 0 && carrito.length > 0 && (
+                            <p className="text-sm text-red-600 mt-4 text-center">
+                                No hay fechas disponibles en este momento.
+                            </p>
+                        )}
                     </div>
 
                     <button
                         onClick={handlePay}
-                        disabled={carrito.length === 0}
+                        disabled={isPayDisabled}
                         className={`bg-red-600 text-white font-semibold py-3 rounded-lg mt-6 transition-opacity ${
-                            carrito.length === 0
+                            isPayDisabled
                                 ? "opacity-50 cursor-default"
                                 : "hover:bg-red-700 cursor-pointer"
                         }`}

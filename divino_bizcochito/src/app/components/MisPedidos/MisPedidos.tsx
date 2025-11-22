@@ -101,7 +101,7 @@ function MisPedidos() {
                                                 className={`px-3 py-1 rounded-md text-xs font-semibold ${
                                                     p.estado === "Recibido"
                                                         ? "bg-blue-300 text-blue-900"
-                                                        : p.estado === "En producción"
+                                                        : p.estado === "En Producción"
                                                         ? "bg-yellow-300 text-yellow-900"
                                                         : p.estado === "Listo"
                                                         ? "bg-purple-300 text-purple-900"

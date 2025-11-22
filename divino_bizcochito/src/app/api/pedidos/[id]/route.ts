@@ -21,12 +21,18 @@ export async function GET(
         perfil:fk_pedido_perfiles ( nombre ),
         detalle_pedido:DetallePedido (
           id,
+          productoId,
           cantidad,
           precioUnitario,
           nombreProducto,
           imagenProducto,
           toppingId,
-          rellenoId
+          rellenoId,
+          producto:Producto (
+            id,
+            nombre,
+            imagen
+          )
         )
       `)
       .eq("id", id)
