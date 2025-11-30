@@ -17,6 +17,7 @@ interface Opcion {
 
 interface Producto {
   id: number;
+  sku?: string;
   nombre: string;
   descripcion: string;
   imagen: string;
@@ -149,6 +150,9 @@ export default function ProductDetail({
       {/* Imagen y datos básicos */}
       <div className="w-full md:w-1/2 flex flex-col items-center">
         <h1 className="text-3xl font-bold text-red-600 mb-4">{producto.nombre}</h1>
+        {producto.sku ? (
+          <p className="text-sm text-gray-600 mb-2">SKU: {producto.sku}</p>
+        ) : null}
         <img
           src={producto.imagen}
           alt={producto.nombre}

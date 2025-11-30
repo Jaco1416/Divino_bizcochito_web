@@ -10,6 +10,7 @@ import { FaPlus } from "react-icons/fa";
 
 interface Producto {
   id: string;
+  sku?: string;
   nombre: string;
   categoriaId: string;
   toppingId?: string;

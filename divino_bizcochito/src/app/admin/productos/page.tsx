@@ -8,6 +8,7 @@ import Link from "next/link";
 
 interface Producto {
     id: string;
+    sku: string;
     nombre: string;
     descripcion: string;
     precio: number;

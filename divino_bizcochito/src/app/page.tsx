@@ -13,6 +13,7 @@ import RecetasCard from "./components/RecetasCard/RecetasCard";
 
 interface Producto {
   id: string;
+  sku?: string;
   nombre: string;
   categoriaId: string;
   precio: number;

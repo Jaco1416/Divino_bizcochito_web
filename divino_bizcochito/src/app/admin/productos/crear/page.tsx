@@ -123,7 +123,6 @@ export default function CrearProductoPage() {
                 return;
             }
             const formData = new FormData();
-
             formData.append("nombre", producto.nombre);
             formData.append("descripcion", producto.descripcion);
             formData.append("precio", producto.precio.toString());
@@ -242,6 +241,7 @@ export default function CrearProductoPage() {
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                                 />
                             </div>
+
 
                             {/* Descripción */}
                             <div>

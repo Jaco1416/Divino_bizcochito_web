@@ -27,6 +27,8 @@ export default function ProductCard({
   // 🔐 Obtenemos el rol directamente desde el contexto global
   const { perfil } = useAuth();
   const isAdmin = perfil?.rol === "admin";
+  const isNombreLargo = nombre.length > 18;
+  const isCategoriaLarga = categoriaId.length > 12;
 
   return (
     <div
@@ -57,11 +59,19 @@ export default function ProductCard({
       {/* Contenido */}
       <div className="flex flex-col justify-between flex-1 p-4">
         {/* Nombre + Categoría */}
-        <div className="flex justify-between items-center mb-1">
-          <h2 className="text-red-600 font-semibold text-base truncate">
+        <div className="flex justify-between items-start gap-2 mb-1">
+          <h2
+            className={`text-red-600 font-semibold flex-1 min-w-0 ${
+              isNombreLargo ? "text-sm leading-tight line-clamp-2" : "text-base leading-tight line-clamp-2"
+            }`}
+          >
             {nombre}
           </h2>
-          <span className="text-sm text-gray-700 font-medium truncate ml-2">
+          <span
+            className={`text-gray-700 font-medium text-right max-w-[40%] ${
+              isCategoriaLarga ? "text-xs leading-tight" : "text-sm leading-tight"
+            }`}
+          >
             {categoriaId}
           </span>
         </div>

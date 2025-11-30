@@ -5,6 +5,13 @@ const TABLE_NAME = 'Producto'
 const BUCKET_NAME = 'project_assets'
 
 const folder = 'Products'
+const generarSku = () => {
+  const letras = Array.from({ length: 3 }, () =>
+    String.fromCharCode(65 + Math.floor(Math.random() * 26))
+  ).join('')
+  const numeros = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
+  return `${letras}-${numeros}`
+}
 // ============================================================
 // 📥 GET → Obtener todos los productos
 // ============================================================
@@ -46,6 +53,7 @@ export async function POST (request: Request) {
     const nombre = formData.get('nombre') as string
     const descripcion = formData.get('descripcion') as string
     const precio = parseFloat(formData.get('precio') as string)
+    const sku = (formData.get('sku') as string | null)?.trim() || generarSku()
     const imagen = formData.get('imagen') as File | null
     const categoriaId = formData.get('categoriaId') as string | null
     const toppingId = formData.get('toppingId') as string | null
@@ -80,6 +88,7 @@ export async function POST (request: Request) {
       .from(TABLE_NAME)
       .insert([
         {
+          sku,
           nombre,
           descripcion,
           precio,
@@ -115,6 +124,7 @@ export async function PUT (request: Request) {
     const nombre = formData.get('nombre') as string
     const descripcion = formData.get('descripcion') as string
     const precio = parseFloat(formData.get('precio') as string)
+    const sku = (formData.get('sku') as string | null)?.trim()
     const categoriaId = formData.get('categoriaId') as string | null
     const toppingId = formData.get('toppingId') as string | null
     const rellenoId = formData.get('rellenoId') as string | null
@@ -148,7 +158,15 @@ export async function PUT (request: Request) {
     // ============================================================
     // ✏️ Armar objeto de actualización dinámico
     // ============================================================
+    if (!sku) {
+      return NextResponse.json(
+        { error: 'El SKU es obligatorio' },
+        { status: 400 }
+      )
+    }
+
     const updateData: Record<string, any> = {
+      sku,
       nombre,
       descripcion,
       precio,

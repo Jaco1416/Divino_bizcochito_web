@@ -164,6 +164,20 @@ export default function CarritoCheck() {
             return;
         }
 
+        // Validar que la fecha elegida sigue teniendo cupo para el carrito
+        const totalProductos = carrito.reduce(
+            (acc, item) => acc + (item.cantidad ?? 0),
+            0
+        );
+        const slotSeleccionado = slots.find(
+            (s) => s.fecha === fechaEntrega && Number(s.restante) >= totalProductos
+        );
+        if (!slotSeleccionado) {
+            showAlert("La fecha seleccionada ya no tiene cupo suficiente. Elige otra.", "warning");
+            setFechaEntrega("");
+            return;
+        }
+
         try {
             console.log("Procesando pago...");
 

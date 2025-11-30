@@ -74,6 +74,22 @@ export async function GET(req: Request) {
         throw new Error('El carrito no contiene productos válidos.')
       }
 
+      const datosEnvio =
+        (carrito as any)?.datosenvio ??
+        (carrito as any)?.datosEnvio ??
+        {}
+
+      const fechaEntrega =
+        (datosEnvio as any)?.fechaEntrega ??
+        (datosEnvio as any)?.fechaentrega ??
+        null
+
+      if (!fechaEntrega) {
+        throw new Error(
+          'El carrito no tiene fecha de entrega. No se puede crear el pedido.'
+        )
+      }
+
       // 3️⃣ Crear pedido
       const { data: pedido, error: errPedido } = await supabase
         .from('Pedido')
@@ -84,6 +100,7 @@ export async function GET(req: Request) {
             tipoEntrega: carrito.tipoentrega,
             datosEnvio: carrito.datosenvio,
             estado: 'Recibido',
+            fechaEntrega,
             total: amount,
             createdAt: timestamp
           }

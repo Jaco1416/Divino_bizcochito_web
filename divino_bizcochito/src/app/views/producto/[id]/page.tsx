@@ -16,6 +16,7 @@ interface Opcion {
 
 interface Producto {
   id: number;
+  sku?: string;
   nombre: string;
   descripcion: string;
   imagen: string;

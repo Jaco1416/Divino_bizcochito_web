@@ -7,6 +7,7 @@ import ConfirmModal from "../ui/ConfirmModal";
 
 interface Producto {
     id: string;
+    sku: string;
     nombre: string;
     descripcion: string;
     precio: number;
@@ -224,6 +225,7 @@ export default function ProductTable({ productos }: ProductTableProps) {
                             <tr>
                                 <th className="px-4 py-3 border border-[#8B3A3A]">Imagen</th>
                                 <th className="px-4 py-3 border border-[#8B3A3A]">Nombre</th>
+                                <th className="px-4 py-3 border border-[#8B3A3A]">SKU</th>
                                 <th className="px-4 py-3 border border-[#8B3A3A]">Descripción</th>
                                 <th className="px-4 py-3 border border-[#8B3A3A]">Categoría</th>
                                 <th className="px-4 py-3 border border-[#8B3A3A]">Topping</th>
@@ -249,6 +251,9 @@ export default function ProductTable({ productos }: ProductTableProps) {
                                     </td>
                                     <td className="px-4 py-2 border border-[#8B3A3A] font-medium capitalize">
                                         {prod.nombre}
+                                    </td>
+                                    <td className="px-4 py-2 border border-[#8B3A3A]">
+                                        {prod.sku || "-"}
                                     </td>
                                     <td className="px-4 py-2 border border-[#8B3A3A]">
                                         {prod.descripcion
@@ -288,7 +293,7 @@ export default function ProductTable({ productos }: ProductTableProps) {
                                 ))
                             ) : (
                                 <tr className="bg-[#A26B6B] text-white border border-[#fff] transition-colors">
-                                    <td className="px-4 py-6 border border-[#8B3A3A]" colSpan={8}>
+                                    <td className="px-4 py-6 border border-[#8B3A3A]" colSpan={9}>
                                         No hay productos que coincidan con los filtros seleccionados.
                                     </td>
                                 </tr>

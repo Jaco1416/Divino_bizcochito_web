@@ -8,6 +8,7 @@ import { useAlert } from "@/app/hooks/useAlert";
 
 interface Producto {
   id?: string;
+  sku: string;
   nombre: string;
   descripcion: string;
   precio: number;
@@ -42,6 +43,7 @@ export default function EditarProductoPage() {
   const { showAlert } = useAlert();
 
   const [producto, setProducto] = useState<Producto>({
+    sku: "",
     nombre: "",
     descripcion: "",
     precio: 0,
@@ -79,7 +81,10 @@ export default function EditarProductoPage() {
         ]);
 
         if (prodRes.ok) {
-          setProducto(prodData);
+          setProducto({
+            ...prodData,
+            sku: prodData?.sku || "",
+          });
           setPreview(prodData?.imagen || "");
         }
 
@@ -134,9 +139,16 @@ export default function EditarProductoPage() {
     setSaving(true);
 
     try {
+      if (!producto.sku.trim()) {
+        showAlert("El SKU es obligatorio", "warning");
+        setSaving(false);
+        return;
+      }
+
       const formData = new FormData();
 
       formData.append("id", String(productId));
+      formData.append("sku", producto.sku.trim());
       formData.append("nombre", producto.nombre);
       formData.append("descripcion", producto.descripcion);
       formData.append("precio", producto.precio.toString());
@@ -271,6 +283,22 @@ export default function EditarProductoPage() {
                   value={producto.nombre}
                   onChange={handleChange}
                   placeholder="Ingresar nombre del producto..."
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
+                />
+              </div>
+
+              {/* SKU */}
+              <div>
+                <label className="block text-[#530708] font-medium mb-1">
+                  SKU (no editable)
+                </label>
+                <input
+                  type="text"
+                  name="sku"
+                  value={producto.sku}
+                  readOnly
+                  required
+                  placeholder="Ej: SKU-001"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[#530708] focus:ring-2 focus:ring-[#C72C2F]"
                 />
               </div>
